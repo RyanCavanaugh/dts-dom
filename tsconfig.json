@@ -1,0 +1,17 @@
+{
+	"files": [
+		"src/index.ts",
+        "src/scratch.ts"
+	],
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "sourceMap": false,
+        "outDir": "./bin"
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
