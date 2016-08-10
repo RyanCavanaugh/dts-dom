@@ -1,7 +1,7 @@
 {
 	"files": [
-		"src/index.ts",
-        "src/scratch.ts"
+		"lib/index.ts",
+        "lib/scratch.ts"
 	],
     "compilerOptions": {
         "module": "commonjs",
@@ -9,7 +9,8 @@
         "noImplicitAny": true,
         "strictNullChecks": true,
         "sourceMap": false,
-        "outDir": "./bin"
+        "outDir": "./bin",
+        "declaration": true
     },
     "exclude": [
         "node_modules"
