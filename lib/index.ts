@@ -161,14 +161,14 @@ export const create = {
 		return {
 			kind: "function",
 			name, parameters, returnType
-		}
+		};
 	},
 
 	parameter(name: string, type: Type, flags = ParameterFlags.None): Parameter {
 		return {
 			kind: "parameter",
 			name, type, flags
-		}
+		};
 	},
 
 	constructor(parameters: Parameter[], flags = MemberFlags.None): ConstructorDeclaration {
@@ -182,21 +182,35 @@ export const create = {
 	const(name: string, type: Type): ConstDeclaration {
 		return {
 			kind: "const", name, type
-		}
+		};
 	},
 
 	namespace(name: string): NamespaceDeclaration {
 		return {
 			kind: "namespace", name,
 			members: []
-		}
+		};
 	},
 
 	objectType(members: ObjectTypeMember[]): ObjectType {
 		return {
 			kind: "object",
 			members
-		}
+		};
+	},
+
+	array(type: Type): ArrayTypeReference {
+		return {
+			kind: "array",
+			type			
+		};
+	},
+
+	namedTypeReference(name: string): NamedTypeReference {
+		return {
+			kind: 'name',
+			name
+		};
 	}
 };
 
@@ -214,11 +228,27 @@ export const type = {
 	void: <PrimitiveType>"void"
 };
 
+const reservedWords = 'instanceof typeof break do new var case else return void catch finally continue for switch while this with debugger function throw default if try delete in'.split(/ /g);
+function canEmitAsIdentifier(s: string) {
+	return /^[$A-Z_][0-9A-Z_$]*$/i.test(s) && reservedWords.indexOf(s) < 0;
+}
+
+const enum ContextFlags {
+	None = 0,
+	InAmbientNamespace = 1 << 0
+}
+
 export function emit(rootDecl: TopLevelDeclaration): string {
 	let output = "";
 	let indentLevel = 0;
+	let contextStack: ContextFlags[] = [];
+
 	writeDeclaration(rootDecl);
 	return output;
+
+	function getContextFlags() {
+		return contextStack.reduce((a, b) => a | b, ContextFlags.None);
+	}
 
 	function tab() {
 		for(let i = 0; i < indentLevel; i++) {
@@ -235,16 +265,23 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 		print(s);
 	}
 
+	function startWithDeclare(s: string) {
+		if (getContextFlags() & ContextFlags.InAmbientNamespace) {
+			start(s);
+		} else {
+			start(`declare ${s}`);
+		}
+	}
+
 	function newline() {
 		output = output + '\r\n';
 	}
 
-	function needsParens(d: TypeReference) {
+	function needsParens(d: Type) {
 		if (typeof d === 'string') {
 			return false;
 		}
 		switch (d.kind) {
-			case "name":
 			case "array":
 			case "alias":
 			case "interface":
@@ -303,9 +340,9 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 					break;
 
 				case "array":
-					if (needsParens(e)) print('(');
+					if (needsParens(e.type)) print('(');
 					writeReference(e.type);
-					if (needsParens(e)) print(')');
+					if (needsParens(e.type)) print(')');
 					print('[]');
 					break;
 
@@ -339,12 +376,23 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 	}
 
 	function writeFunction(f: FunctionDeclaration) {
-		start(`declare function ${name} (`);
+		if (!canEmitAsIdentifier(f.name)) {
+			start(`/* Unspeakable name '${f.name}'`);
+			newline();
+		}
+
+		startWithDeclare(`function ${f.name}(`);
+
 		writeDelimited(f.parameters, ', ', writeParameter);
 		print('): ');
 		writeReference(f.returnType);
 		print(';');
 		newline();
+
+		if (!canEmitAsIdentifier(f.name)) {
+			start(`*/`);
+			newline();
+		}
 	}
 
 	function writeParameter(p: Parameter) {
@@ -364,13 +412,15 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 	}
 
 	function writeClass(c: ClassDeclaration) {
-		start(`class ${c.name} {`);
+		startWithDeclare(`class ${c.name} {`);
+		newline();
 		indentLevel++;
 		for(const m of c.members) {
 			writeClassMember(m);
 		}
 		indentLevel--;
 		start('}');
+		newline();
 	}
 
 	function writeClassMember(c: ClassMember) {
@@ -384,8 +434,48 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 		}
 	}
 
+	function writeConstructorDeclaration(ctor: ConstructorDeclaration) {
+		start('constructor(');
+		writeDelimited(ctor.parameters, ', ', writeParameter);
+		print(');')
+		newline();
+	}
+
+	function writePropertyDeclaration(p: PropertyDeclaration) {
+		start(`${p.name}: `);
+		writeReference(p.type);
+		print(';');
+		newline();
+	}
+
+	function writeMethodDeclaration(m: MethodDeclaration) {
+		start(`${m.name}(`);
+		writeDelimited(m.parameters, ', ', writeParameter);
+		print('): ');
+		writeReference(m.returnType);
+		print(';');
+		newline();
+	}
+
 	function writeNamespace(ns: NamespaceDeclaration) {
-		
+		startWithDeclare(`namespace ${ns.name} {`);
+		contextStack.push(ContextFlags.InAmbientNamespace);
+		newline();
+		indentLevel++;
+		for(const member of ns.members) {
+			writeDeclaration(member);
+		}
+		indentLevel--;
+		start(`}`);
+		contextStack.pop();
+		newline();
+	}
+
+	function writeConst(c: ConstDeclaration) {
+		startWithDeclare(`const ${c.name}: `);
+		writeReference(c.type);
+		print(';');
+		newline();
 	}
 
 	function writeDeclaration(d: TopLevelDeclaration) {
@@ -401,6 +491,8 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 					return writeClass(d);
 				case "namespace":
 					return writeNamespace(d);
+				case "const":
+					return writeConst(d);
 
 				default:
 					throw new Error(`Unknown declaration kind ${d.kind}`);
