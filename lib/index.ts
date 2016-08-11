@@ -233,15 +233,16 @@ function canEmitAsIdentifier(s: string) {
 	return /^[$A-Z_][0-9A-Z_$]*$/i.test(s) && reservedWords.indexOf(s) < 0;
 }
 
-const enum ContextFlags {
+export const enum ContextFlags {
 	None = 0,
-	InAmbientNamespace = 1 << 0
+	Module = 1 << 0,
+	InAmbientNamespace = 1 << 1
 }
 
-export function emit(rootDecl: TopLevelDeclaration): string {
+export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.None): string {
 	let output = "";
 	let indentLevel = 0;
-	let contextStack: ContextFlags[] = [];
+	let contextStack: ContextFlags[] = [rootFlags];
 
 	writeDeclaration(rootDecl);
 	return output;
@@ -396,7 +397,7 @@ export function emit(rootDecl: TopLevelDeclaration): string {
 	}
 
 	function writeParameter(p: Parameter) {
-		print(`${p.flags & ParameterFlags.Optional ? '...' : ''}${p.name}${p.flags & ParameterFlags.Optional ? '?' : ''}: `);
+		print(`${p.flags & ParameterFlags.Rest ? '...' : ''}${p.name}${p.flags & ParameterFlags.Optional ? '?' : ''}: `);
 		writeReference(p.type);
 	}
 
