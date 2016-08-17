@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/dts-dom.svg)](https://badge.fury.io/js/dts-dom)
+
 `dts-dom` is a library for programatically generating TypeScript declaration files.
 It is based mostly on the same [CodeDOM provided for C# and other .NET languages](https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx).
 
