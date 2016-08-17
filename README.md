@@ -9,6 +9,8 @@ PRs gladly accepted as this is mostly implemented on an as-needed basis for anot
 
 # Usage
 
+> `npm install --save dts-dom`
+
 ```ts
 import * as dom from 'dts-dom';
 
