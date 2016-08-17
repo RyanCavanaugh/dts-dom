@@ -1,18 +1,24 @@
 {
 	"files": [
-		"lib/index.ts",
-        "lib/scratch.ts"
+		"lib/index.ts"
 	],
     "compilerOptions": {
+        "types": [],
+
         "module": "commonjs",
         "target": "es5",
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "sourceMap": false,
+
+        "sourceMap": true,
         "outDir": "./bin",
-        "declaration": true
-    },
-    "exclude": [
-        "node_modules"
-    ]
+        "declaration": true,
+
+        "strictNullChecks": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "allowUnreachableCode": false,
+        "forceConsistentCasingInFileNames": true
+    }
 }
+
