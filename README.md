@@ -36,4 +36,5 @@ declare namespace SomeNamespace {
     interface MyInterface {
         getThing?(x: number): void;
     }
-}```
+}
+```
