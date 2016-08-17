@@ -1,12 +1,12 @@
 {
-  "name": "ts-dom",
-  "version": "0.0.1",
+  "name": "dts-dom",
+  "version": "0.1.0",
   "description": "DOM for TypeScript Declaration Files",
   "main": "bin/index.js",
   "typings": "bin/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Ryan Cavanaugh",
   "license": "Apache-2.0"
 }
