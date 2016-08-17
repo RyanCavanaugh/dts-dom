@@ -307,8 +307,13 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
         if (decl.jsDocComment) {
-            // TODO: Handle multi-line JSDoc comments
-            start(`/** ${decl.jsDocComment} */`);
+            start('/**');
+            newline();
+            for(const line of decl.jsDocComment.split(/\n/g)) {
+                start(` * ${line}`);
+                newline();
+            }
+            start(' */');
             newline();
         }
     }

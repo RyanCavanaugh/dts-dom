@@ -15,7 +15,7 @@ PRs gladly accepted as this is mostly implemented on an as-needed basis for anot
 import * as dom from 'dts-dom';
 
 const intf = dom.create.interface('MyInterface');
-intf.comment = 'This is my nice interface';
+intf.jsDocComment = 'This is my nice interface';
 intf.members.push(dom.create.method(
     'getThing',
     [dom.create.parameter('x', dom.type.number)],
@@ -30,9 +30,10 @@ console.log(dom.emit(ns));
 This writes out the block:
 ```ts
 declare namespace SomeNamespace {
-    // This is my nice interface
+    /**
+     * This is my nice interface
+     */
     interface MyInterface {
         getThing?(x: number): void;
     }
-}
-```
+}```
