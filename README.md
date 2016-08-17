@@ -1,5 +1,5 @@
 `dts-dom` is a library for programatically generating TypeScript declaration files.
-It is based mostly on the same [https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx](CodeDOM provided for C# and other .NET languages).
+It is based mostly on the same [CodeDOM provided for C# and other .NET languages](https://msdn.microsoft.com/en-us/library/y2k85ax6(v=vs.110).aspx).
 
 `dts-dom` automatically handles indentation, formatting, and proper placement of `declare` and `export` keywords.
 
