@@ -523,9 +523,17 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeAlias(a: TypeAliasDeclaration) {
+        throw new Error("NYI");
+    }
+
+    function writeExportEquals(e: ExportEqualsDeclaration) {
+        throw new Error("NYI");
+    }
+
     function writeDeclaration(d: TopLevelDeclaration) {
         if (typeof d === 'string') {
-            print(d);
+            return print(d);
         } else {
             switch (d.kind) {
                 case "interface":
@@ -538,11 +546,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeNamespace(d);
                 case "const":
                     return writeConst(d);
+                case "alias":
+                    return writeAlias(d);
+                case "export=":
+                    return writeExportEquals(d);
 
                 default:
-                    throw new Error(`Unknown declaration kind ${d.kind}`);
+                    return never(d, `Unknown declaration kind ${(d as TopLevelDeclaration).kind}`);
             }
-
         }
     }
 }
