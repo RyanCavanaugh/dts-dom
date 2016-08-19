@@ -328,7 +328,6 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel--;
         tab();
         print('}');
-        newline();
 
         function printMember(member: ObjectTypeMember) {
             switch (member.kind) {
