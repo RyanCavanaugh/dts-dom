@@ -247,6 +247,10 @@ export function never(x: never, err: string): never {
     throw new Error(err);
 }
 
+function quote(s: string) {
+    return JSON.stringify(s);
+}
+
 export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.None): string {
     let output = "";
     let indentLevel = 0;
@@ -334,7 +338,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'method':
                     printDeclarationComments(member);
                     tab();
-                    print(`${member.name}`);
+                    print(canEmitAsIdentifier(member.name) ? member.name : quote(member.name));
                     if (member.flags & MemberFlags.Optional) print('?');
                     print('(');
                     let first = true;
@@ -353,7 +357,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'property':
                     printDeclarationComments(member);
                     tab();
-                    print(`${member.name}`);
+                    print(canEmitAsIdentifier(member.name) ? member.name : quote(member.name));
                     if (member.flags & MemberFlags.Optional) print('?');
                     print(': ');
                     writeReference(member.type);
@@ -483,7 +487,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writePropertyDeclaration(p: PropertyDeclaration) {
         printDeclarationComments(p);
-        start(`${p.name}: `);
+        if (canEmitAsIdentifier(p.name)) {
+            start(`${p.name}: `);
+        } else {
+            start(`"${p.name}": `);
+        }
         writeReference(p.type);
         print(';');
         newline();
@@ -491,7 +499,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        start(`${m.name}(`);
+        if (canEmitAsIdentifier(m.name)) {
+            start(`${m.name}(`);
+        } else {
+            start(`"${m.name}"(`);
+        }
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
