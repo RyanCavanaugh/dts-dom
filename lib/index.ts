@@ -232,7 +232,14 @@ export const type = {
     void: <PrimitiveType>"void"
 };
 
-const reservedWords = 'instanceof typeof break do new var case else return void catch finally continue for switch while this with debugger function throw default if try delete in'.split(/ /g);
+export const reservedWords = ['abstract', 'await', 'boolean', 'break', 'byte', 'case',
+	'catch', 'char', 'class', 'const', 'continue', 'debugger', 'default',
+	'delete', 'do', 'double', 'else', 'enum', 'export', 'extends', 'false',
+	'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements',
+	'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native',
+	'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short',
+	'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws',
+	'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield'];
 function canEmitAsIdentifier(s: string) {
     return /^[$A-Z_][0-9A-Z_$]*$/i.test(s) && reservedWords.indexOf(s) < 0;
 }
