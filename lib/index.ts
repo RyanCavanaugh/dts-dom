@@ -252,7 +252,7 @@ export function isIdentifier(s: string) {
 }
 
 function quoteIfNeeded(s: string) {
-    if (isIdentifier(s)) {
+    if (isIdentifierName(s)) {
         return s;
     } else {
         // JSON.stringify handles escaping quotes for us. Handy!
