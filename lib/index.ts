@@ -240,8 +240,24 @@ export const reservedWords = ['abstract', 'await', 'boolean', 'break', 'byte', '
 	'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short',
 	'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws',
 	'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield'];
-function canEmitAsIdentifier(s: string) {
-    return /^[$A-Z_][0-9A-Z_$]*$/i.test(s) && reservedWords.indexOf(s) < 0;
+
+/** IdentifierName can be written as unquoted property names, but may be reserved words. */
+export function isIdentifierName(s: string) {
+    return /^[$A-Z_][0-9A-Z_$]*$/i.test(s);
+}
+
+/** Identifiers are e.g. legal variable names. They may not be reserved words */
+export function isIdentifier(s: string) {
+    return isIdentifierName(s) && reservedWords.indexOf(s) < 0;
+}
+
+function quoteIfNeeded(s: string) {
+    if (isIdentifier(s)) {
+        return s;
+    } else {
+        // JSON.stringify handles escaping quotes for us. Handy!
+        return JSON.stringify(s);
+    }
 }
 
 export const enum ContextFlags {
@@ -252,10 +268,6 @@ export const enum ContextFlags {
 
 export function never(x: never, err: string): never {
     throw new Error(err);
-}
-
-function quote(s: string) {
-    return JSON.stringify(s);
 }
 
 export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.None): string {
@@ -345,7 +357,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'method':
                     printDeclarationComments(member);
                     tab();
-                    print(canEmitAsIdentifier(member.name) ? member.name : quote(member.name));
+                    print(quoteIfNeeded(member.name));
                     if (member.flags & MemberFlags.Optional) print('?');
                     print('(');
                     let first = true;
@@ -364,7 +376,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'property':
                     printDeclarationComments(member);
                     tab();
-                    print(canEmitAsIdentifier(member.name) ? member.name : quote(member.name));
+                    print(quoteIfNeeded(member.name));
                     if (member.flags & MemberFlags.Optional) print('?');
                     print(': ');
                     writeReference(member.type);
@@ -425,8 +437,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeFunction(f: FunctionDeclaration) {
         printDeclarationComments(f);
-        if (!canEmitAsIdentifier(f.name)) {
-            start(`/* Unspeakable name '${f.name}'`);
+        if (!isIdentifier(f.name)) {
+            start(`/* Illegal functoin name '${f.name}' can't be used here`);
             newline();
         }
 
@@ -438,7 +450,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         print(';');
         newline();
 
-        if (!canEmitAsIdentifier(f.name)) {
+        if (!isIdentifier(f.name)) {
             start(`*/`);
             newline();
         }
@@ -494,11 +506,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writePropertyDeclaration(p: PropertyDeclaration) {
         printDeclarationComments(p);
-        if (canEmitAsIdentifier(p.name)) {
-            start(`${p.name}: `);
-        } else {
-            start(`"${p.name}": `);
-        }
+        start(`${quoteIfNeeded(p.name)}: `);
         writeReference(p.type);
         print(';');
         newline();
@@ -506,11 +514,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        if (canEmitAsIdentifier(m.name)) {
-            start(`${m.name}(`);
-        } else {
-            start(`"${m.name}"(`);
-        }
+        start(`${quoteIfNeeded(m.name)}(`);
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
