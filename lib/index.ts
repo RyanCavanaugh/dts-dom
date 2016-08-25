@@ -1,13 +1,13 @@
 export interface DeclarationBase {
     jsDocComment?: string;
     comment?: string;
+    flags?: DeclarationFlags;
 }
 
 export interface PropertyDeclaration extends DeclarationBase {
     kind: "property";
     name: string;
     type: Type;
-    flags?: MemberFlags;
 }
 
 export interface Parameter {
@@ -22,7 +22,6 @@ export interface MethodDeclaration extends DeclarationBase {
     name: string;
     parameters: Parameter[];
     returnType: Type;
-    flags?: MemberFlags;
 }
 
 export interface FunctionDeclaration extends DeclarationBase {
@@ -35,7 +34,6 @@ export interface FunctionDeclaration extends DeclarationBase {
 export interface ConstructorDeclaration extends DeclarationBase {
     kind: "constructor";
     parameters: Parameter[];
-    flags: MemberFlags;
 }
 
 export interface ClassDeclaration extends DeclarationBase {
@@ -54,7 +52,7 @@ export interface InterfaceDeclaration extends DeclarationBase {
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
     name: string;
-    members: TopLevelDeclaration[];
+    members: NamespaceMember[];
 }
 
 export interface ConstDeclaration extends DeclarationBase {
@@ -70,7 +68,7 @@ export interface ExportEqualsDeclaration extends DeclarationBase {
 
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
-    members: TopLevelDeclaration[];
+    members: NamespaceMember[];
 }
 
 export interface ObjectType {
@@ -112,9 +110,11 @@ export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType;
-export type TopLevelDeclaration = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ExportEqualsDeclaration | ConstDeclaration | FunctionDeclaration | NamespaceDeclaration;
 
-export enum MemberFlags {
+export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration;
+
+export enum DeclarationFlags {
     None = 0,
     Private = 1 << 0,
     Protected = 1 << 1,
@@ -147,14 +147,14 @@ export const create = {
         };
     },
 
-    property(name: string, type: Type, flags = MemberFlags.None): PropertyDeclaration {
+    property(name: string, type: Type, flags = DeclarationFlags.None): PropertyDeclaration {
         return {
             kind: "property",
             name, type, flags
         };
     },
 
-    method(name: string, parameters: Parameter[], returnType: Type, flags = MemberFlags.None): MethodDeclaration {
+    method(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): MethodDeclaration {
         return {
             kind: "method",
             name, parameters, returnType, flags
@@ -175,7 +175,7 @@ export const create = {
         };
     },
 
-    constructor(parameters: Parameter[], flags = MemberFlags.None): ConstructorDeclaration {
+    constructor(parameters: Parameter[], flags = DeclarationFlags.None): ConstructorDeclaration {
         return {
             kind: "constructor",
             parameters,
@@ -214,6 +214,13 @@ export const create = {
         return {
             kind: 'name',
             name
+        };
+    },
+
+    exportEquals(target: string): ExportEqualsDeclaration {
+        return {
+            kind: 'export=',
+            target
         };
     }
 };
@@ -297,9 +304,12 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         print(s);
     }
 
-    function startWithDeclare(s: string) {
+    function startWithDeclareOrExport(s: string, flags: DeclarationFlags | undefined) {
         if (getContextFlags() & ContextFlags.InAmbientNamespace) {
+            // Already in an all-export context
             start(s);
+        } else if (flags & DeclarationFlags.Export) {
+            start(`export ${s}`);
         } else {
             start(`declare ${s}`);
         }
@@ -358,7 +368,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printDeclarationComments(member);
                     tab();
                     print(quoteIfNeeded(member.name));
-                    if (member.flags & MemberFlags.Optional) print('?');
+                    if (member.flags & DeclarationFlags.Optional) print('?');
                     print('(');
                     let first = true;
                     for (const param of member.parameters) {
@@ -377,7 +387,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printDeclarationComments(member);
                     tab();
                     print(quoteIfNeeded(member.name));
-                    if (member.flags & MemberFlags.Optional) print('?');
+                    if (member.flags & DeclarationFlags.Optional) print('?');
                     print(': ');
                     writeReference(member.type);
                     print(';');
@@ -442,7 +452,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
 
-        startWithDeclare(`function ${f.name}(`);
+        startWithDeclareOrExport(`function ${f.name}(`, f.flags);
 
         writeDelimited(f.parameters, ', ', writeParameter);
         print('): ');
@@ -474,7 +484,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
-        startWithDeclare(`class ${c.name} {`);
+        startWithDeclareOrExport(`class ${c.name} {`, c.flags);
         newline();
         indentLevel++;
         for (const m of c.members) {
@@ -524,7 +534,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeNamespace(ns: NamespaceDeclaration) {
         printDeclarationComments(ns);
-        startWithDeclare(`namespace ${ns.name} {`);
+        startWithDeclareOrExport(`namespace ${ns.name} {`, ns.flags);
         contextStack.push(ContextFlags.InAmbientNamespace);
         newline();
         indentLevel++;
@@ -539,7 +549,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeConst(c: ConstDeclaration) {
         printDeclarationComments(c);
-        startWithDeclare(`const ${c.name}: `);
+        startWithDeclareOrExport(`const ${c.name}: `, c.flags);
         writeReference(c.type);
         print(';');
         newline();
@@ -550,7 +560,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeExportEquals(e: ExportEqualsDeclaration) {
-        throw new Error("NYI");
+        start(`export = ${e.target};`);
+        newline();
     }
 
     function writeDeclaration(d: TopLevelDeclaration) {
