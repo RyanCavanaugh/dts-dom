@@ -304,6 +304,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         print(s);
     }
 
+    function flagsToString(flags: DeclarationFlags | undefined): string {
+        if (flags & DeclarationFlags.Static) {
+            return 'static ';
+        } else {
+            return '';
+        }
+    }
+
     function startWithDeclareOrExport(s: string, flags: DeclarationFlags | undefined) {
         if (getContextFlags() & ContextFlags.InAmbientNamespace) {
             // Already in an all-export context
@@ -516,7 +524,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writePropertyDeclaration(p: PropertyDeclaration) {
         printDeclarationComments(p);
-        start(`${quoteIfNeeded(p.name)}: `);
+        start(`${flagsToString(p.flags)}${quoteIfNeeded(p.name)}: `);
         writeReference(p.type);
         print(';');
         newline();
@@ -524,7 +532,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        start(`${quoteIfNeeded(m.name)}(`);
+        start(`${flagsToString(m.flags)}${quoteIfNeeded(m.name)}(`);
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
