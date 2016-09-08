@@ -451,6 +451,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             }
         }
         printObjectTypeMembers(d.members);
+        newline();
     }
 
     function writeFunction(f: FunctionDeclaration) {
