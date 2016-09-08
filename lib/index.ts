@@ -457,7 +457,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeFunction(f: FunctionDeclaration) {
         printDeclarationComments(f);
         if (!isIdentifier(f.name)) {
-            start(`/* Illegal functoin name '${f.name}' can't be used here`);
+            start(`/* Illegal function name '${f.name}' can't be used here`);
             newline();
         }
 
