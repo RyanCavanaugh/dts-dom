@@ -66,11 +66,6 @@ export interface ExportEqualsDeclaration extends DeclarationBase {
     target: string;
 }
 
-export interface NamespaceDeclaration extends DeclarationBase {
-    kind: "namespace";
-    members: NamespaceMember[];
-}
-
 export interface ObjectType {
     kind: "object";
     members: ObjectTypeMember[];
