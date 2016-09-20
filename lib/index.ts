@@ -39,14 +39,16 @@ export interface ConstructorDeclaration extends DeclarationBase {
 export interface ClassDeclaration extends DeclarationBase {
     kind: "class";
     name: string;
-    members: Array<ClassMember>;
+    members: ClassMember[];
+    implements: InterfaceDeclaration[];
+    baseType?: ObjectTypeReference;
 }
 
 export interface InterfaceDeclaration extends DeclarationBase {
     kind: "interface";
     name: string;
     members: ObjectTypeMember[];
-    baseTypes?: TypeReference[];
+    baseTypes?: ObjectTypeReference[];
 }
 
 export interface NamespaceDeclaration extends DeclarationBase {
@@ -64,11 +66,6 @@ export interface ConstDeclaration extends DeclarationBase {
 export interface ExportEqualsDeclaration extends DeclarationBase {
     kind: "export=";
     target: string;
-}
-
-export interface NamespaceDeclaration extends DeclarationBase {
-    kind: "namespace";
-    members: NamespaceMember[];
 }
 
 export interface ObjectType {
@@ -106,6 +103,7 @@ export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
+export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
@@ -120,7 +118,8 @@ export enum DeclarationFlags {
     Protected = 1 << 1,
     Static = 1 << 2,
     Optional = 1 << 3,
-    Export = 1 << 4
+    Export = 1 << 4,
+    Abstract = 1 << 5
 }
 
 export enum ParameterFlags {
@@ -143,7 +142,8 @@ export const create = {
         return {
             kind: 'class',
             name,
-            members: []
+            members: [],
+            implements: []
         };
     },
 
@@ -304,12 +304,35 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         print(s);
     }
 
-    function flagsToString(flags: DeclarationFlags | undefined): string {
-        if (flags & DeclarationFlags.Static) {
-            return 'static ';
-        } else {
-            return '';
+    function classFlagsToString(flags: DeclarationFlags | undefined): string {
+        let out = '';
+
+        if (flags & DeclarationFlags.Abstract) {
+            out += 'abstract ';
         }
+
+        return out;
+    }
+
+    function memberFlagsToString(flags: DeclarationFlags | undefined): string {
+        let out = '';
+
+        if (flags & DeclarationFlags.Private) {
+            out += 'private ';
+        }
+        else if (flags & DeclarationFlags.Protected) {
+            out += 'protected ';
+        }
+
+        if (flags & DeclarationFlags.Static) {
+            out += 'static ';
+        }
+
+        if (flags & DeclarationFlags.Abstract) {
+            out += 'abstract ';
+        }
+
+        return out;
     }
 
     function startWithDeclareOrExport(s: string, flags: DeclarationFlags | undefined) {
@@ -493,7 +516,21 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
-        startWithDeclareOrExport(`class ${c.name} {`, c.flags);
+        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name} `, c.flags);
+        if (c.baseType) {
+            print('extends ');
+            writeReference(c.baseType);
+        }
+        if (c.implements && c.implements.length) {
+            print(`implements `);
+            let first = true;
+            for (const impl of c.implements) {
+                if (!first) print(', ');
+                writeReference(impl);
+                first = false;
+            }
+        }
+        print('{');
         newline();
         indentLevel++;
         for (const m of c.members) {
@@ -525,7 +562,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writePropertyDeclaration(p: PropertyDeclaration) {
         printDeclarationComments(p);
-        start(`${flagsToString(p.flags)}${quoteIfNeeded(p.name)}: `);
+        start(`${memberFlagsToString(p.flags)}${quoteIfNeeded(p.name)}: `);
         writeReference(p.type);
         print(';');
         newline();
@@ -533,7 +570,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        start(`${flagsToString(m.flags)}${quoteIfNeeded(m.name)}(`);
+        start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}(`);
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
