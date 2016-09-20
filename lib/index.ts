@@ -39,14 +39,16 @@ export interface ConstructorDeclaration extends DeclarationBase {
 export interface ClassDeclaration extends DeclarationBase {
     kind: "class";
     name: string;
-    members: Array<ClassMember>;
+    members: ClassMember[];
+    implements: InterfaceDeclaration[];
+    baseType?: ObjectTypeReference;
 }
 
 export interface InterfaceDeclaration extends DeclarationBase {
     kind: "interface";
     name: string;
     members: ObjectTypeMember[];
-    baseTypes?: TypeReference[];
+    baseTypes?: ObjectTypeReference[];
 }
 
 export interface NamespaceDeclaration extends DeclarationBase {
@@ -101,6 +103,7 @@ export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
+export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
@@ -139,7 +142,8 @@ export const create = {
         return {
             kind: 'class',
             name,
-            members: []
+            members: [],
+            implements: []
         };
     },
 
@@ -512,7 +516,21 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
-        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name} {`, c.flags);
+        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name} `, c.flags);
+        if (c.baseType) {
+            print('extends ');
+            writeReference(c.baseType);
+        }
+        if (c.implements && c.implements.length) {
+            print(`implements `);
+            let first = true;
+            for (const impl of c.implements) {
+                if (!first) print(', ');
+                writeReference(impl);
+                first = false;
+            }
+        }
+        print('{');
         newline();
         indentLevel++;
         for (const m of c.members) {
