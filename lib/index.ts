@@ -313,6 +313,13 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function memberFlagsToString(flags: DeclarationFlags | undefined): string {
         let out = '';
 
+        if (flags & DeclarationFlags.Private) {
+            out += 'private ';
+        }
+        else if (flags & DeclarationFlags.Protected) {
+            out += 'protected ';
+        }
+
         if (flags & DeclarationFlags.Static) {
             out += 'static ';
         }
