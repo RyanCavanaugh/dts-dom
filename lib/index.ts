@@ -51,6 +51,18 @@ export interface InterfaceDeclaration extends DeclarationBase {
     baseTypes?: ObjectTypeReference[];
 }
 
+export interface ImportAllDeclaration extends DeclarationBase {
+    kind: "importAll";
+    name: string;
+    from: string;
+}
+
+export interface ImportDefaultDeclaration extends DeclarationBase {
+    kind: "importDefault";
+    name: string;
+    from: string;
+}
+
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
     name: string;
@@ -66,6 +78,12 @@ export interface ConstDeclaration extends DeclarationBase {
 export interface ExportEqualsDeclaration extends DeclarationBase {
     kind: "export=";
     target: string;
+}
+
+export interface ModuleDeclaration extends DeclarationBase {
+    kind: "module";
+    name: string;
+    members: ModuleMember[];
 }
 
 export interface ObjectType {
@@ -109,8 +127,11 @@ export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType;
 
+export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
+
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration;
+export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration | Import;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -221,6 +242,30 @@ export const create = {
         return {
             kind: 'export=',
             target
+        };
+    },
+
+    module(name: string): ModuleDeclaration {
+        return {
+            kind: 'module',
+            name,
+            members: []
+        };
+    },
+
+    importAll(name: string, from: string): ImportAllDeclaration {
+        return {
+            kind: 'importAll',
+            name,
+            from
+        };
+    },
+
+    importDefault(name: string, from: string): ImportDefaultDeclaration {
+        return {
+            kind: 'importDefault',
+            name,
+            from
         };
     }
 };
@@ -463,7 +508,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeInterface(d: InterfaceDeclaration) {
         printDeclarationComments(d);
-        start(`interface ${d.name} `);
+        startWithDeclareOrExport(`interface ${d.name} `, d.flags);
         if (d.baseTypes && d.baseTypes.length) {
             print(`extends `);
             let first = true;
@@ -610,6 +655,31 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeModule(m: ModuleDeclaration) {
+        printDeclarationComments(m);
+        startWithDeclareOrExport(`module '${m.name}' {`, m.flags);
+        contextStack.push(ContextFlags.Module);
+        newline();
+        indentLevel++;
+        for (const member of m.members) {
+            writeDeclaration(member);
+        }
+        indentLevel--;
+        start(`}`);
+        contextStack.pop();
+        newline();
+    }
+
+    function writeImportAll(i: ImportAllDeclaration) {
+        start(`import * as ${i.name} from '${i.from}';`);
+        newline();
+    }
+
+    function writeImportDefault(i: ImportDefaultDeclaration) {
+        start(`import ${i.name} from '${i.from}';`);
+        newline();
+    }
+
     function writeDeclaration(d: TopLevelDeclaration) {
         if (typeof d === 'string') {
             return print(d);
@@ -629,6 +699,12 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeAlias(d);
                 case "export=":
                     return writeExportEquals(d);
+                case "module":
+                    return writeModule(d);
+                case "importAll":
+                    return writeImportAll(d);
+                case "importDefault":
+                    return writeImportDefault(d);
 
                 default:
                     return never(d, `Unknown declaration kind ${(d as TopLevelDeclaration).kind}`);
