@@ -145,7 +145,8 @@ export enum DeclarationFlags {
     Static = 1 << 2,
     Optional = 1 << 3,
     Export = 1 << 4,
-    Abstract = 1 << 5
+    Abstract = 1 << 5,
+    ExportDefault = 1 << 6,
 }
 
 export enum ParameterFlags {
@@ -391,6 +392,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             start(s);
         } else if (flags & DeclarationFlags.Export) {
             start(`export ${s}`);
+        } else if (flags & DeclarationFlags.ExportDefault) {
+            start(`export default ${s}`);
         } else {
             start(`declare ${s}`);
         }
