@@ -31,6 +31,12 @@ export interface FunctionDeclaration extends DeclarationBase {
     returnType: Type;
 }
 
+export interface FunctionType extends DeclarationBase {
+    kind: "function-type";
+    parameters: Parameter[];
+    returnType: Type;
+}
+
 export interface ConstructorDeclaration extends DeclarationBase {
     kind: "constructor";
     parameters: Parameter[];
@@ -130,7 +136,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -192,6 +198,13 @@ export const create = {
         return {
             kind: "function",
             name, parameters, returnType
+        };
+    },
+
+    functionType(parameters: Parameter[], returnType: Type): FunctionType {
+        return {
+            kind: "function-type",
+            parameters, returnType
         };
     },
 
@@ -507,12 +520,12 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printObjectTypeMembers(e.members);
                     break;
 
-                case "function":
+                case "function-type":
                     writeFunctionType(e);
                     break;
 
                 case "union":
-                    writeDelimited(e.members, '|', writeReference);
+                    writeDelimited(e.members, ' | ', writeReference);
                     break;
 
                 case "typeof":
@@ -543,7 +556,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
-    function writeFunctionType(f: FunctionDeclaration) {
+    function writeFunctionType(f: FunctionType) {
         print('(');
         writeDelimited(f.parameters, ', ', writeParameter);
         print(')');
