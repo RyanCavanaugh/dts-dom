@@ -117,6 +117,11 @@ export interface NamedTypeReference {
     name: string;
 }
 
+export interface TypeofReference {
+    kind: "typeof";
+    type: NamedTypeReference;
+}
+
 export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
@@ -125,7 +130,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -499,6 +504,19 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printObjectTypeMembers(e.members);
                     break;
 
+                case "function":
+                    writeFunctionType(e);
+                    break;
+
+                case "union":
+                    writeDelimited(e.members, '|', writeReference);
+                    break;
+
+                case "typeof":
+                    print("typeof ");
+                    writeReference(e.type);
+                    break;
+
                 default:
                     throw new Error(`Unknown kind ${d.kind}`);
             }
@@ -520,6 +538,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
         printObjectTypeMembers(d.members);
         newline();
+    }
+
+    function writeFunctionType(f: FunctionDeclaration) {
+        print('(');
+        writeDelimited(f.parameters, ', ', writeParameter);
+        print(')');
+        print('=>');
+        writeReference(f.returnType);
     }
 
     function writeFunction(f: FunctionDeclaration) {
