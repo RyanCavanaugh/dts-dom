@@ -31,12 +31,6 @@ export interface FunctionDeclaration extends DeclarationBase {
     returnType: Type;
 }
 
-export interface FunctionType extends DeclarationBase {
-    kind: "function-type";
-    parameters: Parameter[];
-    returnType: Type;
-}
-
 export interface ConstructorDeclaration extends DeclarationBase {
     kind: "constructor";
     parameters: Parameter[];
@@ -105,6 +99,12 @@ export interface UnionType {
 export interface IntersectionType {
     kind: "intersection";
     members: Type[];
+}
+
+export interface FunctionType {
+    kind: "function-type";
+    parameters: Parameter[];
+    returnType: Type;
 }
 
 export interface TypeAliasDeclaration extends DeclarationBase {
