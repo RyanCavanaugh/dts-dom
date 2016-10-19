@@ -293,6 +293,13 @@ export const create = {
             kind: 'union',
             members
         };
+    },
+
+    typeof(type: NamedTypeReference): TypeofReference {
+        return {
+            kind: 'typeof',
+            type
+        };
     }
 };
 
