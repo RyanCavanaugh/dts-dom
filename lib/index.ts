@@ -286,6 +286,13 @@ export const create = {
             name,
             from
         };
+    },
+
+    union(members: Type[]): UnionType {
+        return {
+            kind: 'union',
+            members
+        };
     }
 };
 
