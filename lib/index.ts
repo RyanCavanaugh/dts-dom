@@ -101,6 +101,12 @@ export interface IntersectionType {
     members: Type[];
 }
 
+export interface FunctionType {
+    kind: "function-type";
+    parameters: Parameter[];
+    returnType: Type;
+}
+
 export interface TypeAliasDeclaration extends DeclarationBase {
     kind: "alias";
     name: string;
@@ -117,6 +123,11 @@ export interface NamedTypeReference {
     name: string;
 }
 
+export interface TypeofReference {
+    kind: "typeof";
+    type: NamedTypeReference;
+}
+
 export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
@@ -125,7 +136,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -140,7 +151,8 @@ export enum DeclarationFlags {
     Static = 1 << 2,
     Optional = 1 << 3,
     Export = 1 << 4,
-    Abstract = 1 << 5
+    Abstract = 1 << 5,
+    ExportDefault = 1 << 6,
 }
 
 export enum ParameterFlags {
@@ -186,6 +198,13 @@ export const create = {
         return {
             kind: "function",
             name, parameters, returnType
+        };
+    },
+
+    functionType(parameters: Parameter[], returnType: Type): FunctionType {
+        return {
+            kind: "function-type",
+            parameters, returnType
         };
     },
 
@@ -266,6 +285,20 @@ export const create = {
             kind: 'importDefault',
             name,
             from
+        };
+    },
+
+    union(members: Type[]): UnionType {
+        return {
+            kind: 'union',
+            members
+        };
+    },
+
+    typeof(type: NamedTypeReference): TypeofReference {
+        return {
+            kind: 'typeof',
+            type
         };
     }
 };
@@ -386,6 +419,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             start(s);
         } else if (flags & DeclarationFlags.Export) {
             start(`export ${s}`);
+        } else if (flags & DeclarationFlags.ExportDefault) {
+            start(`export default ${s}`);
         } else {
             start(`declare ${s}`);
         }
@@ -499,6 +534,19 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printObjectTypeMembers(e.members);
                     break;
 
+                case "function-type":
+                    writeFunctionType(e);
+                    break;
+
+                case "union":
+                    writeDelimited(e.members, ' | ', writeReference);
+                    break;
+
+                case "typeof":
+                    print("typeof ");
+                    writeReference(e.type);
+                    break;
+
                 default:
                     throw new Error(`Unknown kind ${d.kind}`);
             }
@@ -520,6 +568,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
         printObjectTypeMembers(d.members);
         newline();
+    }
+
+    function writeFunctionType(f: FunctionType) {
+        print('(');
+        writeDelimited(f.parameters, ', ', writeParameter);
+        print(')');
+        print('=>');
+        writeReference(f.returnType);
     }
 
     function writeFunction(f: FunctionDeclaration) {
