@@ -229,6 +229,12 @@ export const create = {
         };
     },
 
+    alias(name: string, type: Type): TypeAliasDeclaration {
+        return {
+            kind: "alias", name, type
+        };
+    },
+
     namespace(name: string): NamespaceDeclaration {
         return {
             kind: "namespace", name,
@@ -703,7 +709,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeAlias(a: TypeAliasDeclaration) {
-        throw new Error("NYI");
+        printDeclarationComments(a);
+        startWithDeclareOrExport(`type ${a.name} = `, a.flags);
+        writeReference(a.type);
+        print(';');
+        newline();
     }
 
     function writeExportEquals(e: ExportEqualsDeclaration) {
