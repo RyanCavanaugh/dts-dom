@@ -559,6 +559,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     print('[]');
                     break;
 
+                case "class":
                 case "interface":
                     print(e.name);
                     break;
