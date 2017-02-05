@@ -173,6 +173,10 @@ export enum ParameterFlags {
     Rest = 1 << 1
 }
 
+export const config = {
+    wrapJsDocComments: true,
+};
+
 export const create = {
     interface(name: string): InterfaceDeclaration {
         return {
@@ -484,13 +488,19 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
         if (decl.jsDocComment) {
-            start('/**');
-            newline();
-            for(const line of decl.jsDocComment.split(/\n/g)) {
-                start(` * ${line}`);
+            if (config.wrapJsDocComments) {
+                start('/**');
                 newline();
+                for(const line of decl.jsDocComment.split(/\n/g)) {
+                    start(` * ${line}`);
+                    newline();
+                }
+                start(' */');
             }
-            start(' */');
+            else {
+                start(decl.jsDocComment);
+            }
+
             newline();
         }
     }
