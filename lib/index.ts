@@ -165,6 +165,7 @@ export enum DeclarationFlags {
     Export = 1 << 4,
     Abstract = 1 << 5,
     ExportDefault = 1 << 6,
+    ReadOnly = 1 << 7,
 }
 
 export enum ParameterFlags {
@@ -449,6 +450,10 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             out += 'abstract ';
         }
 
+        if (flags & DeclarationFlags.ReadOnly) {
+            out += 'readonly ';
+        }
+
         return out;
     }
 
@@ -542,6 +547,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'property':
                     printDeclarationComments(member);
                     tab();
+                    if (member.flags & DeclarationFlags.ReadOnly) print('readonly ');
                     print(quoteIfNeeded(member.name));
                     if (member.flags & DeclarationFlags.Optional) print('?');
                     print(': ');
