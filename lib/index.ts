@@ -662,13 +662,13 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
-        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name} `, c.flags);
+        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name}`, c.flags);
         if (c.baseType) {
-            print('extends ');
+            print(' extends ');
             writeReference(c.baseType);
         }
         if (c.implements && c.implements.length) {
-            print(`implements `);
+            print(' implements ');
             let first = true;
             for (const impl of c.implements) {
                 if (!first) print(', ');
@@ -676,7 +676,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 first = false;
             }
         }
-        print('{');
+        print(' {');
         newline();
         indentLevel++;
         for (const m of c.members) {
