@@ -492,7 +492,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             if (config.wrapJsDocComments) {
                 start('/**');
                 newline();
-                for(const line of decl.jsDocComment.split(/\n/g)) {
+                for(const line of decl.jsDocComment.split(/\r?\n/g)) {
                     start(` * ${line}`);
                     newline();
                 }
