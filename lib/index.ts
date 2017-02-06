@@ -175,6 +175,7 @@ export enum ParameterFlags {
 
 export const config = {
     wrapJsDocComments: true,
+    outputEol: '\r\n',
 };
 
 export const create = {
@@ -398,6 +399,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     let contextStack: ContextFlags[] = [rootFlags];
 
     writeDeclaration(rootDecl);
+    newline();
     return output;
 
     function getContextFlags() {
@@ -464,7 +466,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function newline() {
-        output = output + '\r\n';
+        output = output + config.outputEol;
     }
 
     function needsParens(d: Type) {
@@ -491,7 +493,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             if (config.wrapJsDocComments) {
                 start('/**');
                 newline();
-                for(const line of decl.jsDocComment.split(/\n/g)) {
+                for(const line of decl.jsDocComment.split(/\r?\n/g)) {
                     start(` * ${line}`);
                     newline();
                 }
@@ -661,13 +663,13 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
-        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name} `, c.flags);
+        startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name}`, c.flags);
         if (c.baseType) {
-            print('extends ');
+            print(' extends ');
             writeReference(c.baseType);
         }
         if (c.implements && c.implements.length) {
-            print(`implements `);
+            print(' implements ');
             let first = true;
             for (const impl of c.implements) {
                 if (!first) print(', ');
@@ -675,11 +677,12 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 first = false;
             }
         }
-        print('{');
+        print(' {');
         newline();
         indentLevel++;
         for (const m of c.members) {
             writeClassMember(m);
+            newline();
         }
         indentLevel--;
         start('}');
@@ -731,6 +734,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel++;
         for (const member of ns.members) {
             writeDeclaration(member);
+            newline();
         }
         indentLevel--;
         start(`}`);
@@ -767,6 +771,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel++;
         for (const member of m.members) {
             writeDeclaration(member);
+            newline();
         }
         indentLevel--;
         start(`}`);
