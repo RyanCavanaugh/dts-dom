@@ -29,11 +29,18 @@ export interface Parameter {
     flags?: ParameterFlags;
 }
 
+export interface TypeParameter {
+    kind: "type-parameter";
+    name: string;
+    baseType?: ObjectTypeReference|TypeParameter;
+}
+
 export interface MethodDeclaration extends DeclarationBase {
     kind: "method";
     name: string;
     parameters: Parameter[];
     returnType: Type;
+    typeParameters: TypeParameter[];
 }
 
 export interface FunctionDeclaration extends DeclarationBase {
@@ -41,6 +48,7 @@ export interface FunctionDeclaration extends DeclarationBase {
     name: string;
     parameters: Parameter[];
     returnType: Type;
+    typeParameters: TypeParameter[];
 }
 
 export interface ConstructorDeclaration extends DeclarationBase {
@@ -53,6 +61,7 @@ export interface ClassDeclaration extends DeclarationBase {
     name: string;
     members: ClassMember[];
     implements: InterfaceDeclaration[];
+    typeParameters: TypeParameter[];
     baseType?: ObjectTypeReference;
 }
 
@@ -148,7 +157,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -165,6 +174,7 @@ export enum DeclarationFlags {
     Export = 1 << 4,
     Abstract = 1 << 5,
     ExportDefault = 1 << 6,
+    ReadOnly = 1 << 7,
 }
 
 export enum ParameterFlags {
@@ -193,7 +203,15 @@ export const create = {
             kind: 'class',
             name,
             members: [],
-            implements: []
+            implements: [],
+            typeParameters: []
+        };
+    },
+
+    typeParameter(name: string, baseType?: ObjectTypeReference|TypeParameter): TypeParameter {
+        return {
+            kind: 'type-parameter',
+            name, baseType
         };
     },
 
@@ -222,6 +240,7 @@ export const create = {
     method(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): MethodDeclaration {
         return {
             kind: "method",
+            typeParameters: [],
             name, parameters, returnType, flags
         };
     },
@@ -229,6 +248,7 @@ export const create = {
     function(name: string, parameters: Parameter[], returnType: Type): FunctionDeclaration {
         return {
             kind: "function",
+            typeParameters: [],
             name, parameters, returnType
         };
     },
@@ -449,6 +469,10 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             out += 'abstract ';
         }
 
+        if (flags & DeclarationFlags.ReadOnly) {
+            out += 'readonly ';
+        }
+
         return out;
     }
 
@@ -542,6 +566,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'property':
                     printDeclarationComments(member);
                     tab();
+                    if (member.flags & DeclarationFlags.ReadOnly) print('readonly ');
                     print(quoteIfNeeded(member.name));
                     if (member.flags & DeclarationFlags.Optional) print('?');
                     print(': ');
@@ -560,7 +585,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         } else {
             const e = d;
             switch (e.kind) {
+                case "type-parameter":
+                case "class":
+                case "interface":
                 case "name":
+                case "alias":
                     print(e.name);
                     break;
 
@@ -569,11 +598,6 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     writeReference(e.type);
                     if (needsParens(e.type)) print(')');
                     print('[]');
-                    break;
-
-                case "class":
-                case "interface":
-                    print(e.name);
                     break;
 
                 case "object":
@@ -598,6 +622,33 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             }
 
         }
+    }
+
+    function writeTypeParameters(params: TypeParameter[]) {
+        if (params.length === 0) return;
+
+        print('<');
+
+        let first = true;
+
+        for (const p of params) {
+            if (!first) print(', ');
+
+            print(p.name);
+
+            if (p.baseType) {
+                print(' extends ');
+
+                if (p.baseType.kind === 'type-parameter')
+                    print(p.baseType.name);
+                else
+                    writeReference(p.baseType);
+            }
+
+            first = false;
+        }
+
+        print('>');
     }
 
     function writeInterface(d: InterfaceDeclaration) {
@@ -631,8 +682,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
 
-        startWithDeclareOrExport(`function ${f.name}(`, f.flags);
-
+        startWithDeclareOrExport(`function ${f.name}`, f.flags);
+        writeTypeParameters(f.typeParameters);
+        print('(')
         writeDelimited(f.parameters, ', ', writeParameter);
         print('): ');
         writeReference(f.returnType);
@@ -664,6 +716,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
         startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name}`, c.flags);
+        writeTypeParameters(c.typeParameters);
         if (c.baseType) {
             print(' extends ');
             writeReference(c.baseType);
@@ -718,7 +771,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}(`);
+        start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}`);
+        writeTypeParameters(m.typeParameters);
+        print('(');
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
