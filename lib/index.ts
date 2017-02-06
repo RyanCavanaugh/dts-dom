@@ -516,6 +516,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             case "alias":
             case "interface":
             case "class":
+            case "union":
                 return true;
             default:
                 return false;
