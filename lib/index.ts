@@ -35,6 +35,13 @@ export interface TypeParameter {
     baseType?: ObjectTypeReference|TypeParameter;
 }
 
+export interface IndexSignature {
+    kind: "index-signature";
+    name: string;
+    indexType: ("string"|"number");
+    valueType: Type;
+}
+
 export interface MethodDeclaration extends DeclarationBase {
     kind: "method";
     name: string;
@@ -154,7 +161,7 @@ export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
 export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
-export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
+export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter;
@@ -299,6 +306,13 @@ export const create = {
             kind: "object",
             members
         };
+    },
+
+    indexSignature(name: string, indexType: ('string'|'number'), valueType: Type): IndexSignature {
+        return {
+            kind: 'index-signature',
+            name, indexType, valueType
+        }
     },
 
     array(type: Type): ArrayTypeReference {
@@ -502,6 +516,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             case "alias":
             case "interface":
             case "class":
+            case "union":
                 return true;
             default:
                 return false;
@@ -544,6 +559,16 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
         function printMember(member: ObjectTypeMember) {
             switch (member.kind) {
+                case 'index-signature':
+                    printDeclarationComments(member);
+                    tab();
+                    print(`[${member.name}: `);
+                    writeReference(member.indexType);
+                    print(']: ');
+                    writeReference(member.valueType);
+                    print(';');
+                    newline();
+                    return;
                 case 'method':
                     printDeclarationComments(member);
                     tab();
