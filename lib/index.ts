@@ -175,6 +175,7 @@ export enum ParameterFlags {
 
 export const config = {
     wrapJsDocComments: true,
+    outputEol: '\r\n',
 };
 
 export const create = {
@@ -464,7 +465,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function newline() {
-        output = output + '\r\n';
+        output = output + config.outputEol;
     }
 
     function needsParens(d: Type) {
