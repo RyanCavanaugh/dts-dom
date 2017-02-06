@@ -4,6 +4,18 @@ export interface DeclarationBase {
     flags?: DeclarationFlags;
 }
 
+export interface EnumMemberDeclaration extends DeclarationBase {
+    kind: "enum-value";
+    name: string;
+}
+
+export interface EnumDeclaration extends DeclarationBase {
+    kind: "enum";
+    name: string;
+    members: EnumMemberDeclaration[];
+    constant: boolean;
+}
+
 export interface PropertyDeclaration extends DeclarationBase {
     kind: "property";
     name: string;
@@ -142,7 +154,7 @@ export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | Import;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -161,6 +173,10 @@ export enum ParameterFlags {
     Rest = 1 << 1
 }
 
+export const config = {
+    wrapJsDocComments: true,
+};
+
 export const create = {
     interface(name: string): InterfaceDeclaration {
         return {
@@ -177,6 +193,21 @@ export const create = {
             name,
             members: [],
             implements: []
+        };
+    },
+
+    enum(name: string, constant: boolean = false): EnumDeclaration {
+        return {
+            kind: 'enum',
+            name, constant,
+            members: []
+        };
+    },
+
+    enumValue(name: string): EnumMemberDeclaration {
+        return {
+            kind: 'enum-value',
+            name
         };
     },
 
@@ -457,13 +488,19 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
         if (decl.jsDocComment) {
-            start('/**');
-            newline();
-            for(const line of decl.jsDocComment.split(/\n/g)) {
-                start(` * ${line}`);
+            if (config.wrapJsDocComments) {
+                start('/**');
                 newline();
+                for(const line of decl.jsDocComment.split(/\n/g)) {
+                    start(` * ${line}`);
+                    newline();
+                }
+                start(' */');
             }
-            start(' */');
+            else {
+                start(decl.jsDocComment);
+            }
+
             newline();
         }
     }
@@ -532,6 +569,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     print('[]');
                     break;
 
+                case "class":
                 case "interface":
                     print(e.name);
                     break;
@@ -746,6 +784,26 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeEnum(e: EnumDeclaration) {
+        printDeclarationComments(e);
+        startWithDeclareOrExport(`${e.constant ? 'const ' : ''}enum ${e.name} {`, e.flags);
+        newline();
+        indentLevel++;
+        for (const member of e.members) {
+            writeEnumValue(member);
+        }
+        indentLevel--;
+        start(`}`);
+        newline();
+    }
+
+    function writeEnumValue(e: EnumMemberDeclaration) {
+        printDeclarationComments(e);
+        start(e.name);
+        print(',');
+        newline();
+    }
+
     function writeDeclaration(d: TopLevelDeclaration) {
         if (typeof d === 'string') {
             return print(d);
@@ -771,6 +829,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeImportAll(d);
                 case "importDefault":
                     return writeImportDefault(d);
+                case "enum":
+                    return writeEnum(d);
 
                 default:
                     return never(d, `Unknown declaration kind ${(d as TopLevelDeclaration).kind}`);
