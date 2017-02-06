@@ -29,10 +29,10 @@ export interface Parameter {
     flags?: ParameterFlags;
 }
 
-export interface Generic {
-    kind: "generic";
+export interface TypeParameter {
+    kind: "type-parameter";
     name: string;
-    baseType?: ObjectTypeReference|Generic;
+    baseType?: ObjectTypeReference|TypeParameter;
 }
 
 export interface MethodDeclaration extends DeclarationBase {
@@ -40,7 +40,7 @@ export interface MethodDeclaration extends DeclarationBase {
     name: string;
     parameters: Parameter[];
     returnType: Type;
-    generics: Generic[];
+    typeParameters: TypeParameter[];
 }
 
 export interface FunctionDeclaration extends DeclarationBase {
@@ -48,7 +48,7 @@ export interface FunctionDeclaration extends DeclarationBase {
     name: string;
     parameters: Parameter[];
     returnType: Type;
-    generics: Generic[];
+    typeParameters: TypeParameter[];
 }
 
 export interface ConstructorDeclaration extends DeclarationBase {
@@ -61,7 +61,7 @@ export interface ClassDeclaration extends DeclarationBase {
     name: string;
     members: ClassMember[];
     implements: InterfaceDeclaration[];
-    generics: Generic[];
+    typeParameters: TypeParameter[];
     baseType?: ObjectTypeReference;
 }
 
@@ -157,7 +157,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | Generic;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -204,13 +204,13 @@ export const create = {
             name,
             members: [],
             implements: [],
-            generics: []
+            typeParameters: []
         };
     },
 
-    generic(name: string, baseType?: ObjectTypeReference|Generic): Generic {
+    typeParameter(name: string, baseType?: ObjectTypeReference|TypeParameter): TypeParameter {
         return {
-            kind: 'generic',
+            kind: 'type-parameter',
             name, baseType
         };
     },
@@ -240,7 +240,7 @@ export const create = {
     method(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): MethodDeclaration {
         return {
             kind: "method",
-            generics: [],
+            typeParameters: [],
             name, parameters, returnType, flags
         };
     },
@@ -248,7 +248,7 @@ export const create = {
     function(name: string, parameters: Parameter[], returnType: Type): FunctionDeclaration {
         return {
             kind: "function",
-            generics: [],
+            typeParameters: [],
             name, parameters, returnType
         };
     },
@@ -585,7 +585,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         } else {
             const e = d;
             switch (e.kind) {
-                case "generic":
+                case "type-parameter":
                 case "class":
                 case "interface":
                 case "name":
@@ -624,25 +624,25 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
     }
 
-    function writeGenerics(generics: Generic[]) {
-        if (generics.length === 0) return;
+    function writeTypeParameters(params: TypeParameter[]) {
+        if (params.length === 0) return;
 
         print('<');
 
         let first = true;
 
-        for (const g of generics) {
+        for (const p of params) {
             if (!first) print(', ');
 
-            print(g.name);
+            print(p.name);
 
-            if (g.baseType) {
+            if (p.baseType) {
                 print(' extends ');
 
-                if (g.baseType.kind === 'generic')
-                    print(g.baseType.name);
+                if (p.baseType.kind === 'type-parameter')
+                    print(p.baseType.name);
                 else
-                    writeReference(g.baseType);
+                    writeReference(p.baseType);
             }
 
             first = false;
@@ -683,7 +683,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
 
         startWithDeclareOrExport(`function ${f.name}`, f.flags);
-        writeGenerics(f.generics);
+        writeTypeParameters(f.typeParameters);
         print('(')
         writeDelimited(f.parameters, ', ', writeParameter);
         print('): ');
@@ -716,7 +716,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
         startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name}`, c.flags);
-        writeGenerics(c.generics);
+        writeTypeParameters(c.typeParameters);
         if (c.baseType) {
             print(' extends ');
             writeReference(c.baseType);
@@ -772,7 +772,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
         start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}`);
-        writeGenerics(m.generics);
+        writeTypeParameters(m.typeParameters);
         print('(');
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
