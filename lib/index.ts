@@ -399,6 +399,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     let contextStack: ContextFlags[] = [rootFlags];
 
     writeDeclaration(rootDecl);
+    newline();
     return output;
 
     function getContextFlags() {
@@ -681,6 +682,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel++;
         for (const m of c.members) {
             writeClassMember(m);
+            newline();
         }
         indentLevel--;
         start('}');
@@ -732,6 +734,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel++;
         for (const member of ns.members) {
             writeDeclaration(member);
+            newline();
         }
         indentLevel--;
         start(`}`);
@@ -768,6 +771,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         indentLevel++;
         for (const member of m.members) {
             writeDeclaration(member);
+            newline();
         }
         indentLevel--;
         start(`}`);
