@@ -29,11 +29,18 @@ export interface Parameter {
     flags?: ParameterFlags;
 }
 
+export interface Generic {
+    kind: "generic";
+    name: string;
+    baseType?: ObjectTypeReference|Generic;
+}
+
 export interface MethodDeclaration extends DeclarationBase {
     kind: "method";
     name: string;
     parameters: Parameter[];
     returnType: Type;
+    generics: Generic[];
 }
 
 export interface FunctionDeclaration extends DeclarationBase {
@@ -41,6 +48,7 @@ export interface FunctionDeclaration extends DeclarationBase {
     name: string;
     parameters: Parameter[];
     returnType: Type;
+    generics: Generic[];
 }
 
 export interface ConstructorDeclaration extends DeclarationBase {
@@ -53,6 +61,7 @@ export interface ClassDeclaration extends DeclarationBase {
     name: string;
     members: ClassMember[];
     implements: InterfaceDeclaration[];
+    generics: Generic[];
     baseType?: ObjectTypeReference;
 }
 
@@ -148,7 +157,7 @@ export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | Generic;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -194,7 +203,15 @@ export const create = {
             kind: 'class',
             name,
             members: [],
-            implements: []
+            implements: [],
+            generics: []
+        };
+    },
+
+    generic(name: string, baseType?: ObjectTypeReference|Generic): Generic {
+        return {
+            kind: 'generic',
+            name, baseType
         };
     },
 
@@ -223,6 +240,7 @@ export const create = {
     method(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): MethodDeclaration {
         return {
             kind: "method",
+            generics: [],
             name, parameters, returnType, flags
         };
     },
@@ -230,6 +248,7 @@ export const create = {
     function(name: string, parameters: Parameter[], returnType: Type): FunctionDeclaration {
         return {
             kind: "function",
+            generics: [],
             name, parameters, returnType
         };
     },
@@ -566,7 +585,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         } else {
             const e = d;
             switch (e.kind) {
+                case "generic":
+                case "class":
+                case "interface":
                 case "name":
+                case "alias":
                     print(e.name);
                     break;
 
@@ -575,11 +598,6 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     writeReference(e.type);
                     if (needsParens(e.type)) print(')');
                     print('[]');
-                    break;
-
-                case "class":
-                case "interface":
-                    print(e.name);
                     break;
 
                 case "object":
@@ -604,6 +622,33 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             }
 
         }
+    }
+
+    function writeGenerics(generics: Generic[]) {
+        if (generics.length === 0) return;
+
+        print('<');
+
+        let first = true;
+
+        for (const g of generics) {
+            if (!first) print(', ');
+
+            print(g.name);
+
+            if (g.baseType) {
+                print(' extends ');
+
+                if (g.baseType.kind === 'generic')
+                    print(g.baseType.name);
+                else
+                    writeReference(g.baseType);
+            }
+
+            first = false;
+        }
+
+        print('>');
     }
 
     function writeInterface(d: InterfaceDeclaration) {
@@ -637,8 +682,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             newline();
         }
 
-        startWithDeclareOrExport(`function ${f.name}(`, f.flags);
-
+        startWithDeclareOrExport(`function ${f.name}`, f.flags);
+        writeGenerics(f.generics);
+        print('(')
         writeDelimited(f.parameters, ', ', writeParameter);
         print('): ');
         writeReference(f.returnType);
@@ -670,6 +716,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeClass(c: ClassDeclaration) {
         printDeclarationComments(c);
         startWithDeclareOrExport(`${classFlagsToString(c.flags)}class ${c.name}`, c.flags);
+        writeGenerics(c.generics);
         if (c.baseType) {
             print(' extends ');
             writeReference(c.baseType);
@@ -724,7 +771,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeMethodDeclaration(m: MethodDeclaration) {
         printDeclarationComments(m);
-        start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}(`);
+        start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}`);
+        writeGenerics(m.generics);
+        print('(');
         writeDelimited(m.parameters, ', ', writeParameter);
         print('): ');
         writeReference(m.returnType);
