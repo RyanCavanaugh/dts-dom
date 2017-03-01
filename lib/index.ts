@@ -417,7 +417,7 @@ function quoteIfNeeded(s: string) {
     }
 }
 
-export const enum ContextFlags {
+export enum ContextFlags {
     None = 0,
     Module = 1 << 0,
     InAmbientNamespace = 1 << 1
