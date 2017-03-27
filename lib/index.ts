@@ -158,13 +158,15 @@ export interface TypeofReference {
 
 export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void";
 
+export type ThisType = "this";
+
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
 export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
 export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature;
 export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
-export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter;
+export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
 
@@ -386,7 +388,8 @@ export const type = {
     number: <PrimitiveType>"number",
     boolean: <PrimitiveType>"boolean",
     any: <PrimitiveType>"any",
-    void: <PrimitiveType>"void"
+    void: <PrimitiveType>"void",
+    this: <ThisType>"this"
 };
 
 export const reservedWords = ['abstract', 'await', 'boolean', 'break', 'byte', 'case',
