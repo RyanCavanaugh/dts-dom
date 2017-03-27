@@ -458,17 +458,17 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         print(s);
     }
 
-    function classFlagsToString(flags: DeclarationFlags | undefined): string {
+    function classFlagsToString(flags: DeclarationFlags | undefined = DeclarationFlags.None): string {
         let out = '';
 
-        if (flags & DeclarationFlags.Abstract) {
+        if (flags && flags & DeclarationFlags.Abstract) {
             out += 'abstract ';
         }
 
         return out;
     }
 
-    function memberFlagsToString(flags: DeclarationFlags | undefined): string {
+    function memberFlagsToString(flags: DeclarationFlags | undefined = DeclarationFlags.None): string {
         let out = '';
 
         if (flags & DeclarationFlags.Private) {
@@ -493,7 +493,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         return out;
     }
 
-    function startWithDeclareOrExport(s: string, flags: DeclarationFlags | undefined) {
+    function startWithDeclareOrExport(s: string, flags: DeclarationFlags | undefined  = DeclarationFlags.None) {
         if (getContextFlags() & ContextFlags.InAmbientNamespace) {
             // Already in an all-export context
             start(s);
@@ -549,6 +549,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
     }
 
+    function hasFlag<T extends number>(haystack: T | undefined, needle: T): boolean;
+    function hasFlag(haystack: number | undefined, needle: number) {
+        if (haystack === undefined) {
+            return false;
+        }
+        return !!(needle & haystack);
+    }
+
     function printObjectTypeMembers(members: ObjectTypeMember[]) {
         print('{');
         newline();
@@ -576,7 +584,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     printDeclarationComments(member);
                     tab();
                     print(quoteIfNeeded(member.name));
-                    if (member.flags & DeclarationFlags.Optional) print('?');
+                    if (hasFlag(member.flags, DeclarationFlags.Optional)) print('?');
                     print('(');
                     let first = true;
                     for (const param of member.parameters) {
@@ -594,9 +602,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'property':
                     printDeclarationComments(member);
                     tab();
-                    if (member.flags & DeclarationFlags.ReadOnly) print('readonly ');
+                    if (hasFlag(member.flags, DeclarationFlags.ReadOnly)) print('readonly ');
                     print(quoteIfNeeded(member.name));
-                    if (member.flags & DeclarationFlags.Optional) print('?');
+                    if (hasFlag(member.flags, DeclarationFlags.Optional)) print('?');
                     print(': ');
                     writeReference(member.type);
                     print(';');
@@ -726,7 +734,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeParameter(p: Parameter) {
-        print(`${p.flags & ParameterFlags.Rest ? '...' : ''}${p.name}${p.flags & ParameterFlags.Optional ? '?' : ''}: `);
+        const flags = p.flags || DeclarationFlags.None;
+        print(`${flags & ParameterFlags.Rest ? '...' : ''}${p.name}${flags & ParameterFlags.Optional ? '?' : ''}: `);
         writeReference(p.type);
     }
 
