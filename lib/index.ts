@@ -85,6 +85,13 @@ export interface ImportAllDeclaration extends DeclarationBase {
     from: string;
 }
 
+export interface ImportNamedDeclaration extends DeclarationBase {
+    kind: "importNamed";
+    name: string;
+    as?: string;
+    from: string;
+}
+
 export interface ImportDefaultDeclaration extends DeclarationBase {
     kind: "importDefault";
     name: string;
@@ -168,7 +175,7 @@ export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
-export type Import = ImportAllDeclaration | ImportDefaultDeclaration;
+export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration | Import;
@@ -359,6 +366,15 @@ export const create = {
             kind: 'importDefault',
             name,
             from
+        };
+    },
+
+    importNamed(name: string, as: string, from?: string): ImportNamedDeclaration {
+        return {
+            kind: 'importNamed',
+            name,
+            as: typeof from !== 'undefined' ? as : undefined,
+            from: typeof from !== 'undefined' ? from : as
         };
     },
 
@@ -881,6 +897,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeImportNamed(i: ImportNamedDeclaration) {
+        start(`import {${i.name}`);
+        if (i.as) {
+            print(` as ${i.as}`);
+        }
+        print(`} from '${i.from}';`);
+        newline();
+    }
+
     function writeEnum(e: EnumDeclaration) {
         printDeclarationComments(e);
         startWithDeclareOrExport(`${e.constant ? 'const ' : ''}enum ${e.name} {`, e.flags);
@@ -926,6 +951,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeImportAll(d);
                 case "importDefault":
                     return writeImportDefault(d);
+                case "importNamed":
+                    return writeImportNamed(d);
                 case "enum":
                     return writeEnum(d);
 
