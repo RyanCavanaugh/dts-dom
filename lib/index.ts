@@ -179,7 +179,7 @@ export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNam
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | MethodDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -749,6 +749,28 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
     }
 
+    function writeMethod(m: MethodDeclaration) {
+        printDeclarationComments(m);
+        if (!isIdentifier(m.name)){
+            start(`/* Illegal function name '${m.name}' cant be used here`);
+            newline();
+        }
+
+        startWithDeclareOrExport(`function '${m.name}'`, m.flags);
+        writeTypeParameters(m.typeParameters);
+        print('(')
+        writeDelimited(m.parameters, ', ', writeParameter);
+        print('): ');
+        writeReference(m.returnType);
+        print(';');
+        newline();
+
+        if (!isIdentifier(m.name)) {
+            start(`*/`);
+            newline();
+        }
+    }
+
     function writeParameter(p: Parameter) {
         const flags = p.flags || DeclarationFlags.None;
         print(`${flags & ParameterFlags.Rest ? '...' : ''}${p.name}${flags & ParameterFlags.Optional ? '?' : ''}: `);
@@ -822,7 +844,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
-    function writeMethodDeclaration(m: MethodDeclaration) {
+    function writeMethodDeclaration(m: MethodDeclaration | FunctionDeclaration) {
         printDeclarationComments(m);
         start(`${memberFlagsToString(m.flags)}${quoteIfNeeded(m.name)}`);
         writeTypeParameters(m.typeParameters);
@@ -927,6 +949,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeDeclaration(d: TopLevelDeclaration) {
+        // if (d.kind == "method") d.kind = "function";
         if (typeof d === 'string') {
             return print(d);
         } else {
@@ -935,6 +958,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeInterface(d);
                 case "function":
                     return writeFunction(d);
+                case "method":
+                    return writeMethod(d);
                 case "class":
                     return writeClass(d);
                 case "namespace":
