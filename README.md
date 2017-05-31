@@ -22,7 +22,7 @@ intf.members.push(dom.create.method(
     'getThing',
     [dom.create.parameter('x', dom.type.number)],
     dom.type.void,
-    dom.MemberFlags.Optional));
+    dom.DeclarationFlags.Optional));
 
 const ns = dom.create.namespace('SomeNamespace');
 ns.members.push(intf);
