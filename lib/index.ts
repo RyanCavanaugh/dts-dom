@@ -163,7 +163,7 @@ export interface TypeofReference {
     type: NamedTypeReference;
 }
 
-export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object";
+export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object" | "null" | "undefined" | "true" | "false";
 
 export type ThisType = "this";
 
@@ -406,6 +406,10 @@ export const type = {
     any: <PrimitiveType>"any",
     void: <PrimitiveType>"void",
     object: <PrimitiveType>"object",
+    null: <PrimitiveType>"null",
+    undefined: <PrimitiveType>"undefined",
+    true: <PrimitiveType>"true",
+    false: <PrimitiveType>"false",
     this: <ThisType>"this"
 };
 
