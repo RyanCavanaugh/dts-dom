@@ -163,7 +163,17 @@ export interface TypeofReference {
     type: NamedTypeReference;
 }
 
-export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object" | "null" | "undefined" | "true" | "false";
+export interface StringLiteral {
+    kind: "string-literal";
+    value: string;
+}
+
+export interface NumberLiteral {
+    kind: "number-literal";
+    value: number;
+}
+
+export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object" | "null" | "undefined" | "true" | "false" | StringLiteral | NumberLiteral;
 
 export type ThisType = "this";
 
@@ -398,6 +408,18 @@ export const type = {
         return {
             kind: "array",
             type
+        }
+    },
+    stringLiteral(string: string): PrimitiveType {
+        return {
+            kind: "string-literal",
+            value: string
+        }
+    },
+    numberLiteral(number: number): PrimitiveType {
+        return {
+            kind: "number-literal",
+            value: number
         }
     },
     string: <PrimitiveType>"string",
@@ -659,6 +681,16 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
                 case "object":
                     printObjectTypeMembers(e.members);
+                    break;
+                    
+                case "string-literal":
+                    print(JSON.stringify(e.value));
+                    break;
+                    
+                case "number-literal":
+                    if (isNaN(e.value)) print("typeof NaN");
+                    else if (!isFinite(e.value)) print("typeof Infinity");
+                    else print(e.value.toString());
                     break;
 
                 case "function-type":
