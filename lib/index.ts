@@ -599,7 +599,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 case 'method':
                     printDeclarationComments(member);
                     tab();
-                    print(quoteIfNeeded(member.name));
+                    let name = member.name ? quoteIfNeeded(member.name) : '';
+                    print(name);
                     if (hasFlag(member.flags, DeclarationFlags.Optional)) print('?');
                     print('(');
                     let first = true;
