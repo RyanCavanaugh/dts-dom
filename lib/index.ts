@@ -42,7 +42,7 @@ export interface IndexSignature {
     valueType: Type;
 }
 
-export interface CallSignature {
+export interface CallSignature extends DeclarationBase {
     kind: "call-signature";
     parameters: Parameter[];
     returnType: Type;
