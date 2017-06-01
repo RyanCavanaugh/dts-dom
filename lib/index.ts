@@ -146,6 +146,7 @@ export interface TypeAliasDeclaration extends DeclarationBase {
     kind: "alias";
     name: string;
     type: Type;
+    typeParameters: TypeParameter[];
 }
 
 export interface ArrayTypeReference {
@@ -309,7 +310,8 @@ export const create = {
 
     alias(name: string, type: Type): TypeAliasDeclaration {
         return {
-            kind: "alias", name, type
+            kind: "alias", name, type,
+            typeParameters: []
         };
     },
 
@@ -897,7 +899,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
 
     function writeAlias(a: TypeAliasDeclaration) {
         printDeclarationComments(a);
-        startWithDeclareOrExport(`type ${a.name} = `, a.flags);
+        startWithDeclareOrExport(`type ${a.name}`, a.flags);
+        writeTypeParameters(a.typeParameters);
+        print(' = ');
         writeReference(a.type);
         print(';');
         newline();
