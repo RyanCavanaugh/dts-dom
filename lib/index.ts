@@ -82,7 +82,7 @@ export interface ClassDeclaration extends DeclarationBase {
 export interface InterfaceDeclaration extends DeclarationBase {
     kind: "interface";
     name: string;
-    members: ObjectTypeMember[];
+    members: InterfaceMember[];
     baseTypes?: ObjectTypeReference[];
 }
 
@@ -130,7 +130,7 @@ export interface ModuleDeclaration extends DeclarationBase {
 
 export interface ObjectType {
     kind: "object";
-    members: ObjectTypeMember[];
+    members: InterfaceMember[];
 }
 
 export interface UnionType {
@@ -177,8 +177,9 @@ export type ThisType = "this";
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
 export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
-export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature | CallSignature;
-export type ClassMember = PropertyDeclaration | MethodDeclaration | IndexSignature | ConstructorDeclaration;
+export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature;
+export type InterfaceMember = ObjectTypeMember | CallSignature;
+export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
@@ -325,7 +326,7 @@ export const create = {
         };
     },
 
-    objectType(members: ObjectTypeMember[]): ObjectType {
+    objectType(members: InterfaceMember[]): ObjectType {
         return {
             kind: "object",
             members
@@ -588,7 +589,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         return !!(needle & haystack);
     }
 
-    function printObjectTypeMembers(members: ObjectTypeMember[]) {
+    function printObjectTypeMembers(members: InterfaceMember[]) {
         print('{');
         newline();
         indentLevel++;
@@ -599,7 +600,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         tab();
         print('}');
 
-        function printMember(member: ObjectTypeMember) {
+        function printMember(member: InterfaceMember) {
             switch (member.kind) {
                 case 'index-signature':
                     printDeclarationComments(member);
@@ -661,7 +662,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     newline();
                     return;
             }
-            never(member, `Unknown member kind ${(member as ObjectTypeMember).kind}`);
+            never(member, `Unknown member kind ${(member as InterfaceMember).kind}`);
         }
     }
 
