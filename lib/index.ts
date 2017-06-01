@@ -589,7 +589,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         return !!(needle & haystack);
     }
 
-    function printObjectTypeMembers(members: InterfaceMember[]) {
+    function printInterfaceMembers(members: InterfaceMember[]) {
         print('{');
         newline();
         indentLevel++;
@@ -688,7 +688,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     break;
 
                 case "object":
-                    printObjectTypeMembers(e.members);
+                    printInterfaceMembers(e.members);
                     break;
 
                 case "function-type":
@@ -750,7 +750,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                 first = false;
             }
         }
-        printObjectTypeMembers(d.members);
+        printInterfaceMembers(d.members);
         newline();
     }
 
