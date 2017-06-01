@@ -42,6 +42,13 @@ export interface IndexSignature {
     valueType: Type;
 }
 
+export interface CallSignature {
+    kind: "call-signature";
+    parameters: Parameter[];
+    returnType: Type;
+    typeParameters: TypeParameter[];
+}
+
 export interface MethodDeclaration extends DeclarationBase {
     kind: "method";
     name: string;
@@ -170,8 +177,8 @@ export type ThisType = "this";
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
 export type ObjectTypeReference = ClassDeclaration | InterfaceDeclaration;
-export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature;
-export type ClassMember = ObjectTypeMember | ConstructorDeclaration;
+export type ObjectTypeMember = PropertyDeclaration | MethodDeclaration | IndexSignature | CallSignature;
+export type ClassMember = PropertyDeclaration | MethodDeclaration | IndexSignature | ConstructorDeclaration;
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
@@ -258,6 +265,14 @@ export const create = {
             kind: "method",
             typeParameters: [],
             name, parameters, returnType, flags
+        };
+    },
+
+    callSignature(parameters: Parameter[], returnType: Type): CallSignature {
+        return {
+            kind: "call-signature",
+            typeParameters: [],
+            parameters, returnType
         };
     },
 
@@ -596,11 +611,29 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     print(';');
                     newline();
                     return;
+                case "call-signature": {
+                    printDeclarationComments(member);
+                    tab();
+                    writeTypeParameters(member.typeParameters);
+                    print("(");
+                    let first = true;
+                    for (const param of member.parameters) {
+                        if (!first) print(", ");
+                        first = false;
+                        print(param.name);
+                        print(": ");
+                        writeReference(param.type);
+                    }
+                    print("): ");
+                    writeReference(member.returnType);
+                    print(";");
+                    newline();
+                    return;
+                }
                 case 'method':
                     printDeclarationComments(member);
                     tab();
-                    let name = member.name ? quoteIfNeeded(member.name) : '';
-                    print(name);
+                    print(quoteIfNeeded(member.name));
                     if (hasFlag(member.flags, DeclarationFlags.Optional)) print('?');
                     print('(');
                     let first = true;
