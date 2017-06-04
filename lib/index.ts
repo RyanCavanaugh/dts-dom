@@ -649,7 +649,9 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     if ((config.preferMethodSignature === true) &&
                         (typeof member.type !== "string") &&
                         (member.type.kind === "function-type")) {
-                        const m = create.method(member.name, member.type.parameters, member.type.returnType);
+                        const m = create.method(member.name, member.type.parameters, member.type.returnType, member.flags);
+                        m.comment = member.comment;
+                        m.jsDocComment = member.jsDocComment;
                         printMember(m);
                         return;
                     }
