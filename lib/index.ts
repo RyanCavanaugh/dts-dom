@@ -220,6 +220,7 @@ export enum ParameterFlags {
 export const config = {
     wrapJsDocComments: true,
     outputEol: '\r\n',
+    preferMethodSignature: false,
 };
 
 export const create = {
@@ -679,6 +680,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     newline();
                     return;
                 case 'property':
+                    if ((config.preferMethodSignature === true) &&
+                        (typeof member.type !== "string") &&
+                        (member.type.kind === "function-type")) {
+                        const m = create.method(member.name, member.type.parameters, member.type.returnType, member.flags);
+                        m.comment = member.comment;
+                        m.jsDocComment = member.jsDocComment;
+                        printMember(m);
+                        return;
+                    }
                     printDeclarationComments(member);
                     tab();
                     if (hasFlag(member.flags, DeclarationFlags.ReadOnly)) print('readonly ');
