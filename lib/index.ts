@@ -669,9 +669,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     for (const param of member.parameters) {
                         if (!first) print(', ');
                         first = false;
-                        print(param.name);
-                        print(': ');
-                        writeReference(param.type);
+			writeParameter(param);
                     }
                     print('): ');
                     writeReference(member.returnType);
