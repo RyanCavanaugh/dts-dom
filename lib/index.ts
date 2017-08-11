@@ -35,7 +35,7 @@ export interface TypeParameter {
     baseType?: ObjectTypeReference|TypeParameter;
 }
 
-export interface IndexSignature {
+export interface IndexSignature extends DeclarationBase {
     kind: "index-signature";
     name: string;
     indexType: ("string"|"number");
