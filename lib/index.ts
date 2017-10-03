@@ -7,6 +7,7 @@ export interface DeclarationBase {
 export interface EnumMemberDeclaration extends DeclarationBase {
     kind: "enum-value";
     name: string;
+    value?: string | number;
 }
 
 export interface EnumDeclaration extends DeclarationBase {
@@ -257,10 +258,11 @@ export const create = {
         };
     },
 
-    enumValue(name: string): EnumMemberDeclaration {
+    enumValue(name: string, value?: string | number): EnumMemberDeclaration {
         return {
             kind: 'enum-value',
-            name
+            name,
+            value
         };
     },
 
@@ -995,6 +997,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     function writeEnumValue(e: EnumMemberDeclaration) {
         printDeclarationComments(e);
         start(e.name);
+
+        if (e.value) {
+            if (typeof e.value === 'string') {
+                print(` = "${e.value}"`);
+            } else {
+                print(` = ${e.value}`);
+            }
+        }
+
         print(',');
         newline();
     }
