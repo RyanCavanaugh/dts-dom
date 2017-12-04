@@ -118,6 +118,12 @@ export interface ConstDeclaration extends DeclarationBase {
     type: Type;
 }
 
+export interface VariableDeclaration extends DeclarationBase {
+    kind: "var";
+    name: string;
+    type: Type;
+}
+
 export interface ExportEqualsDeclaration extends DeclarationBase {
     kind: "export=";
     target: string;
@@ -196,8 +202,8 @@ export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType 
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration;
 
-export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration;
-export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | FunctionDeclaration | Import;
+export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
+export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
 export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
@@ -322,6 +328,12 @@ export const create = {
     const(name: string, type: Type): ConstDeclaration {
         return {
             kind: "const", name, type
+        };
+    },
+
+    variable(name: string, type: Type): VariableDeclaration {
+        return {
+            kind: "var", name, type
         };
     },
 
@@ -931,6 +943,14 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeVar(c: VariableDeclaration) {
+        printDeclarationComments(c);
+        startWithDeclareOrExport(`var ${c.name}: `, c.flags);
+        writeReference(c.type);
+        print(';');
+        newline();
+    }
+
     function writeAlias(a: TypeAliasDeclaration) {
         printDeclarationComments(a);
         startWithDeclareOrExport(`type ${a.name}`, a.flags);
@@ -1025,6 +1045,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeNamespace(d);
                 case "const":
                     return writeConst(d);
+                case "var":
+                    return writeVar(d);
                 case "alias":
                     return writeAlias(d);
                 case "export=":
