@@ -7,12 +7,22 @@
   "typings": "bin/index.d.ts",
   "scripts": {
     "build": "tsc -p .",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "test": "mocha --compilers=ts:ts-node/register --no-timeouts test/**/test.*.ts"
   },
   "author": "Ryan Cavanaugh",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/RyanCavanaugh/dts-dom"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.7",
+    "@types/mocha": "^2.2.44",
+    "@types/node": "^8.0.54",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.6.2"
   }
 }
