@@ -3,7 +3,11 @@
 		"lib/index.ts"
 	],
     "compilerOptions": {
-        "types": [],
+        "types": [
+            "@types/node",
+            "@types/mocha",
+            "@types/chai"
+        ],
 
         "module": "commonjs",
         "target": "es5",
