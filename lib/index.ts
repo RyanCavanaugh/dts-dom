@@ -230,22 +230,24 @@ export const config = {
 };
 
 export const create = {
-    interface(name: string): InterfaceDeclaration {
+    interface(name: string, flags = DeclarationFlags.None): InterfaceDeclaration {
         return {
             name,
             baseTypes: [],
             kind: "interface",
-            members: []
+            members: [],
+            flags
         };
     },
 
-    class(name: string): ClassDeclaration {
+    class(name: string, flags = DeclarationFlags.None): ClassDeclaration {
         return {
             kind: 'class',
             name,
             members: [],
             implements: [],
-            typeParameters: []
+            typeParameters: [],
+            flags
         };
     },
 
@@ -256,11 +258,12 @@ export const create = {
         };
     },
 
-    enum(name: string, constant: boolean = false): EnumDeclaration {
+    enum(name: string, constant: boolean = false, flags = DeclarationFlags.None): EnumDeclaration {
         return {
             kind: 'enum',
             name, constant,
-            members: []
+            members: [],
+            flags
         };
     },
 
@@ -295,11 +298,11 @@ export const create = {
         };
     },
 
-    function(name: string, parameters: Parameter[], returnType: Type): FunctionDeclaration {
+    function(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): FunctionDeclaration {
         return {
             kind: "function",
             typeParameters: [],
-            name, parameters, returnType
+            name, parameters, returnType, flags
         };
     },
 
@@ -325,9 +328,9 @@ export const create = {
         };
     },
 
-    const(name: string, type: Type): ConstDeclaration {
+    const(name: string, type: Type, flags = DeclarationFlags.None): ConstDeclaration {
         return {
-            kind: "const", name, type
+            kind: "const", name, type, flags
         };
     },
 
@@ -337,10 +340,10 @@ export const create = {
         };
     },
 
-    alias(name: string, type: Type): TypeAliasDeclaration {
+    alias(name: string, type: Type, flags = DeclarationFlags.None): TypeAliasDeclaration {
         return {
             kind: "alias", name, type,
-            typeParameters: []
+            typeParameters: [], flags
         };
     },
 
