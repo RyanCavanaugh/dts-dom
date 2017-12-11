@@ -106,6 +106,12 @@ export interface ImportDefaultDeclaration extends DeclarationBase {
     from: string;
 }
 
+export interface ImportEqualsDeclaration extends DeclarationBase {
+    kind: "import=";
+    name: string;
+    from: string;
+}
+
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
     name: string;
@@ -200,7 +206,7 @@ export type ClassMember = PropertyDeclaration | MethodDeclaration | IndexSignatu
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
-export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration;
+export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
@@ -419,6 +425,14 @@ export const create = {
             name,
             as: typeof from !== 'undefined' ? as : undefined,
             from: typeof from !== 'undefined' ? from : as
+        };
+    },
+
+    importEquals(name: string, from: string): ImportEqualsDeclaration {
+        return {
+            kind: 'import=',
+            name,
+            from
         };
     },
 
@@ -1004,6 +1018,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeImportEquals(i: ImportEqualsDeclaration) {
+        start(`import ${i.name} = require('${i.from}');`);
+        newline();
+    }
+
     function writeEnum(e: EnumDeclaration) {
         printDeclarationComments(e);
         startWithDeclareOrExport(`${e.constant ? 'const ' : ''}enum ${e.name} {`, e.flags);
@@ -1062,6 +1081,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeImportDefault(d);
                 case "importNamed":
                     return writeImportNamed(d);
+                case "import=":
+                    return writeImportEquals(d);
                 case "enum":
                     return writeEnum(d);
 
