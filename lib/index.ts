@@ -135,6 +135,12 @@ export interface ExportEqualsDeclaration extends DeclarationBase {
     target: string;
 }
 
+export interface ExportNameDeclaration extends DeclarationBase {
+    kind: "exportName";
+    name: string;
+    as?: string;
+}
+
 export interface ModuleDeclaration extends DeclarationBase {
     kind: "module";
     name: string;
@@ -210,7 +216,7 @@ export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNam
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -392,6 +398,14 @@ export const create = {
         return {
             kind: 'export=',
             target
+        };
+    },
+
+    exportName(name: string, as?: string): ExportNameDeclaration {
+        return {
+            kind: "exportName",
+            name,
+            as
         };
     },
 
@@ -983,6 +997,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeExportName(e: ExportNameDeclaration) {
+        start(`export { ${e.name}`);
+        if (e.as) {
+            print(` as ${e.as}`);
+        }
+        print(` };`);
+        newline();
+    }
+
     function writeModule(m: ModuleDeclaration) {
         printDeclarationComments(m);
         startWithDeclareOrExport(`module '${m.name}' {`, m.flags);
@@ -1073,6 +1096,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeAlias(d);
                 case "export=":
                     return writeExportEquals(d);
+                case "exportName":
+                    return writeExportName(d);
                 case "module":
                     return writeModule(d);
                 case "importAll":
