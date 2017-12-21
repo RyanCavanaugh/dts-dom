@@ -106,6 +106,12 @@ export interface ImportDefaultDeclaration extends DeclarationBase {
     from: string;
 }
 
+export interface ImportEqualsDeclaration extends DeclarationBase {
+    kind: "import=";
+    name: string;
+    from: string;
+}
+
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
     name: string;
@@ -127,6 +133,12 @@ export interface VariableDeclaration extends DeclarationBase {
 export interface ExportEqualsDeclaration extends DeclarationBase {
     kind: "export=";
     target: string;
+}
+
+export interface ExportNameDeclaration extends DeclarationBase {
+    kind: "exportName";
+    name: string;
+    as?: string;
 }
 
 export interface ModuleDeclaration extends DeclarationBase {
@@ -200,11 +212,11 @@ export type ClassMember = PropertyDeclaration | MethodDeclaration | IndexSignatu
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
-export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration;
+export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -230,22 +242,24 @@ export const config = {
 };
 
 export const create = {
-    interface(name: string): InterfaceDeclaration {
+    interface(name: string, flags = DeclarationFlags.None): InterfaceDeclaration {
         return {
             name,
             baseTypes: [],
             kind: "interface",
-            members: []
+            members: [],
+            flags
         };
     },
 
-    class(name: string): ClassDeclaration {
+    class(name: string, flags = DeclarationFlags.None): ClassDeclaration {
         return {
             kind: 'class',
             name,
             members: [],
             implements: [],
-            typeParameters: []
+            typeParameters: [],
+            flags
         };
     },
 
@@ -256,11 +270,12 @@ export const create = {
         };
     },
 
-    enum(name: string, constant: boolean = false): EnumDeclaration {
+    enum(name: string, constant: boolean = false, flags = DeclarationFlags.None): EnumDeclaration {
         return {
             kind: 'enum',
             name, constant,
-            members: []
+            members: [],
+            flags
         };
     },
 
@@ -295,11 +310,11 @@ export const create = {
         };
     },
 
-    function(name: string, parameters: Parameter[], returnType: Type): FunctionDeclaration {
+    function(name: string, parameters: Parameter[], returnType: Type, flags = DeclarationFlags.None): FunctionDeclaration {
         return {
             kind: "function",
             typeParameters: [],
-            name, parameters, returnType
+            name, parameters, returnType, flags
         };
     },
 
@@ -325,9 +340,9 @@ export const create = {
         };
     },
 
-    const(name: string, type: Type): ConstDeclaration {
+    const(name: string, type: Type, flags = DeclarationFlags.None): ConstDeclaration {
         return {
-            kind: "const", name, type
+            kind: "const", name, type, flags
         };
     },
 
@@ -337,10 +352,10 @@ export const create = {
         };
     },
 
-    alias(name: string, type: Type): TypeAliasDeclaration {
+    alias(name: string, type: Type, flags = DeclarationFlags.None): TypeAliasDeclaration {
         return {
             kind: "alias", name, type,
-            typeParameters: []
+            typeParameters: [], flags
         };
     },
 
@@ -386,6 +401,14 @@ export const create = {
         };
     },
 
+    exportName(name: string, as?: string): ExportNameDeclaration {
+        return {
+            kind: "exportName",
+            name,
+            as
+        };
+    },
+
     module(name: string): ModuleDeclaration {
         return {
             kind: 'module',
@@ -416,6 +439,14 @@ export const create = {
             name,
             as: typeof from !== 'undefined' ? as : undefined,
             from: typeof from !== 'undefined' ? from : as
+        };
+    },
+
+    importEquals(name: string, from: string): ImportEqualsDeclaration {
+        return {
+            kind: 'import=',
+            name,
+            from
         };
     },
 
@@ -966,6 +997,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeExportName(e: ExportNameDeclaration) {
+        start(`export { ${e.name}`);
+        if (e.as) {
+            print(` as ${e.as}`);
+        }
+        print(` };`);
+        newline();
+    }
+
     function writeModule(m: ModuleDeclaration) {
         printDeclarationComments(m);
         startWithDeclareOrExport(`module '${m.name}' {`, m.flags);
@@ -998,6 +1038,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
             print(` as ${i.as}`);
         }
         print(`} from '${i.from}';`);
+        newline();
+    }
+
+    function writeImportEquals(i: ImportEqualsDeclaration) {
+        start(`import ${i.name} = require('${i.from}');`);
         newline();
     }
 
@@ -1051,6 +1096,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeAlias(d);
                 case "export=":
                     return writeExportEquals(d);
+                case "exportName":
+                    return writeExportName(d);
                 case "module":
                     return writeModule(d);
                 case "importAll":
@@ -1059,6 +1106,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeImportDefault(d);
                 case "importNamed":
                     return writeImportNamed(d);
+                case "import=":
+                    return writeImportEquals(d);
                 case "enum":
                     return writeEnum(d);
 
