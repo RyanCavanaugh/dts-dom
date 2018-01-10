@@ -43,14 +43,14 @@ declare namespace SomeNamespace {
 
 # Contributors
 
-The following outstanding individuals have contributed features and/or bug requests
- * @sjbarag
- * @wehrstedt
- * @NewFeuture
- * @leonard-thieu
- * @RMcNeely
- * @KnisterPeter
- * @jskrzypek
- * @englercj 
- * @morlay
- * @jdanyow
+The following people have contributed features and/or bug requests. Thank you!
+ * [Sean Barag](https://www.github.com/sjbarag)
+ * [wehrstedt](https://www.github.com/wehrstedt)
+ * [New Future](https://www.github.com/NewFuture)
+ * [Leonard Thieu](https://www.github.com/leonard-thieu)
+ * [Ryan McNeely](https://www.github.com/RMcNeely)
+ * [Markus Wolf](https://www.github.com/KnisterPeter)
+ * [Joshua Skrzypek](https://www.github.com/jskrzypek)
+ * [Chad Engler](https://www.github.com/englercj)
+ * [Morlay](https://www.github.com/morlay)
+ * [Jeremy Danyow](https://www.github.com/jdanyow)
