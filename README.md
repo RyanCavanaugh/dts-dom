@@ -40,3 +40,17 @@ declare namespace SomeNamespace {
     }
 }
 ```
+
+# Contributors
+
+The following outstanding individuals have contributed features and/or bug requests
+ * @sjbarag
+ * @wehrstedt
+ * @NewFeuture
+ * @leonard-thieu
+ * @RMcNeely
+ * @KnisterPeter
+ * @jskrzypek
+ * @englercj 
+ * @morlay
+ * @jdanyow
