@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted union type with a function and a string matches the snapshot 1`] = `
+"declare type testUnion = (...args: any[])=>any | string;
+
+"
+`;
