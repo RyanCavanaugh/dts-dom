@@ -112,6 +112,11 @@ export interface ImportEqualsDeclaration extends DeclarationBase {
     from: string;
 }
 
+export interface ImportDeclaration extends DeclarationBase {
+    kind: "import";
+    from: string;
+}
+
 export interface NamespaceDeclaration extends DeclarationBase {
     kind: "namespace";
     name: string;
@@ -212,7 +217,7 @@ export type ClassMember = PropertyDeclaration | MethodDeclaration | IndexSignatu
 
 export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter | ThisType;
 
-export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration;
+export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration | ImportDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
@@ -446,6 +451,13 @@ export const create = {
         return {
             kind: 'import=',
             name,
+            from
+        };
+    },
+
+    import(from: string): ImportDeclaration {
+        return {
+            kind: 'import',
             from
         };
     },
@@ -1046,6 +1058,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         newline();
     }
 
+    function writeImport(i: ImportDeclaration) {
+        start(`import '${i.from}';`);
+        newline();
+    }
+
     function writeEnum(e: EnumDeclaration) {
         printDeclarationComments(e);
         startWithDeclareOrExport(`${e.constant ? 'const ' : ''}enum ${e.name} {`, e.flags);
@@ -1108,6 +1125,8 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     return writeImportNamed(d);
                 case "import=":
                     return writeImportEquals(d);
+                case "import":
+                    return writeImport(d);
                 case "enum":
                     return writeEnum(d);
 
