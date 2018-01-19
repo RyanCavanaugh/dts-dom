@@ -749,6 +749,16 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
     }
 
+    function writeUnionReference(d: Type) {
+        if (typeof d !== "string" && d.kind === "function-type") {
+            print('(')
+            writeReference(d)
+            print(')')
+        } else {
+            writeReference(d)
+        }
+    }
+
     function writeReference(d: Type) {
         if (typeof d === 'string') {
             print(d);
@@ -789,7 +799,7 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
                     break;
 
                 case "union":
-                    writeDelimited(e.members, ' | ', writeReference);
+                    writeDelimited(e.members, ' | ', writeUnionReference);
                     break;
 
                 case "typeof":
@@ -848,15 +858,11 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeFunctionType(f: FunctionType) {
-        // we wrap type in () here to make sure it works nicely in unions
-        // and other cases
-        print('(');
         print('(');
         writeDelimited(f.parameters, ', ', writeParameter);
         print(')');
         print('=>');
         writeReference(f.returnType);
-        print(')');
     }
 
     function writeFunction(f: FunctionDeclaration) {
