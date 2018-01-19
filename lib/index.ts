@@ -848,11 +848,15 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
     }
 
     function writeFunctionType(f: FunctionType) {
+        // we wrap type in () here to make sure it works nicely in unions
+        // and other cases
+        print('(');
         print('(');
         writeDelimited(f.parameters, ', ', writeParameter);
         print(')');
         print('=>');
         writeReference(f.returnType);
+        print(')');
     }
 
     function writeFunction(f: FunctionDeclaration) {
