@@ -55,3 +55,4 @@ The following people have contributed features and/or bug requests. Thank you!
  * [Morlay](https://www.github.com/morlay)
  * [Jeremy Danyow](https://www.github.com/jdanyow)
  * [Hendrik Liebau](https://github.com/KingHenne)
+ * [Timur Amirov](https://github.com/DeTeam)
