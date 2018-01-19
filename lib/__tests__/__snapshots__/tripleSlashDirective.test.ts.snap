@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted module with triple slash directives matches the snapshot 1`] = `
+/// <reference path="./test" />
+/// <reference types="test" />
+/// <reference no-default-lib="true" />
+/// <amd-module />
+/// <amd-module name="test" />
+declare module 'test' {
+}
+
+
+`;
+
+exports[`an emitted module without triple slash directives matches the snapshot 1`] = `
+declare module 'test' {
+}
+
+
+`;

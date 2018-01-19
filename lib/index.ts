@@ -205,9 +205,31 @@ export interface NumberLiteral {
     value: number;
 }
 
+export interface TripleSlashReferencePathDirective {
+    kind: "triple-slash-reference-path",
+    path: string;
+}
+
+export interface TripleSlashReferenceTypesDirective {
+    kind: "triple-slash-reference-types",
+    types: string;
+}
+
+export interface TripleSlashReferenceNoDefaultLibDirective {
+    kind: "triple-slash-reference-no-default-lib",
+    value: boolean;
+}
+
+export interface TripleSlashAmdModuleDirective {
+    kind: "triple-slash-amd-module",
+    name?: string;
+}
+
 export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object" | "null" | "undefined" | "true" | "false" | StringLiteral | NumberLiteral;
 
 export type ThisType = "this";
+
+export type TripleSlashDirective = TripleSlashReferencePathDirective | TripleSlashReferenceTypesDirective | TripleSlashReferenceNoDefaultLibDirective | TripleSlashAmdModuleDirective;
 
 export type TypeReference = TopLevelDeclaration | NamedTypeReference | ArrayTypeReference | PrimitiveType;
 
@@ -474,6 +496,34 @@ export const create = {
             kind: 'typeof',
             type
         };
+    },
+
+    tripleSlashReferencePathDirective(path: string): TripleSlashReferencePathDirective {
+        return {
+            kind: "triple-slash-reference-path",
+            path
+        };
+    },
+
+    tripleSlashReferenceTypesDirective(types: string): TripleSlashReferenceTypesDirective {
+        return {
+            kind: "triple-slash-reference-types",
+            types
+        };
+    },
+
+    tripleSlashReferenceNoDefaultLibDirective(value: boolean = true): TripleSlashReferenceNoDefaultLibDirective {
+        return {
+            kind: "triple-slash-reference-no-default-lib",
+            value
+        };
+    },
+
+    tripleSlashAmdModuleDirective(name?: string): TripleSlashAmdModuleDirective {
+        return {
+            kind: "triple-slash-amd-module",
+            name
+        };
     }
 };
 
@@ -547,10 +597,12 @@ export function never(x: never, err: string): never {
     throw new Error(err);
 }
 
-export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.None): string {
+export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.None, tripleSlashDirectives: TripleSlashDirective[] = []): string {
     let output = "";
     let indentLevel = 0;
     let contextStack: ContextFlags[] = [rootFlags];
+
+    tripleSlashDirectives.forEach(writeTripleSlashDirective);
 
     writeDeclaration(rootDecl);
     newline();
@@ -1099,6 +1151,33 @@ export function emit(rootDecl: TopLevelDeclaration, rootFlags = ContextFlags.Non
         }
 
         print(',');
+        newline();
+    }
+
+    function writeTripleSlashDirective(t: TripleSlashDirective) {
+        const type = t.kind === "triple-slash-amd-module" ? "amd-module" : "reference";
+        start(`/// <${type}`);
+
+        switch (t.kind) {
+            case "triple-slash-reference-path":
+                print(` path="${t.path}"`);
+                break;
+            case "triple-slash-reference-types":
+                print(` types="${t.types}"`);
+                break;
+            case "triple-slash-reference-no-default-lib":
+                print(` no-default-lib="${t.value}"`);
+                break;
+            case "triple-slash-amd-module":
+                if (t.name) {
+                    print(` name="${t.name}"`);
+                }
+                break;
+            default:
+                never(t, `Unknown triple slash directive kind ${(t as TripleSlashDirective).kind}`);
+        }
+
+        print(" />");
         newline();
     }
 
