@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`an emitted function type matches the snapshot 1`] = `
-"declare type testFunction = (...args: any[])=>any;
+declare type testFunction = (...args: any[])=>any;
 
-"
+
 `;
