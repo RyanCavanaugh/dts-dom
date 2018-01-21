@@ -43,7 +43,7 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 2.0
+## 2.0 (not yet released)
  * **New Functionality**: Added the ability to emit triple-slash-references #40
  * **Breaking Change**: Changed the second parameter of `emit` from `ContextFlags` to `EmitOptions` #40
 ```ts
