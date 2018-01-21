@@ -41,6 +41,32 @@ declare namespace SomeNamespace {
 }
 ```
 
+# Version History
+
+## 2.0
+ * **New Functionality**: Added the ability to emit triple-slash-references #40
+ * **Breaking Change**: Changed the second parameter of `emit` from `ContextFlags` to `EmitOptions` #40
+```ts
+// 1.0
+const s = emit(tree, ContextFlags.Module);
+// 2.0
+const s = emit(tree, { rootFlags: ContextFlags.Module });
+```
+
+## 1.0
+
+The same as 0.1.25
+
+# Semver Policy
+
+The major version will be bumped if:
+ * The *semantics* of emitted code changes, even if the prior emit was categorically wrong
+ * The API surface changes in a way that could break the runtime behavior of extant working code
+
+The major version will *not* be bumped if:
+ * New API surface is added
+ * The *formatting* of emitted code changes
+
 # Contributors
 
 The following people have contributed features and/or bug fixes. Thank you!
