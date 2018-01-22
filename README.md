@@ -43,7 +43,7 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 2.0 (not yet released)
+## 2.0
  * **New Functionality**: Added the ability to emit [triple-slash directives](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) #39
     ```ts
     const tripleSlashDirectives = [create.tripleSlashReferenceTypesDirective("react")];
@@ -52,7 +52,7 @@ declare namespace SomeNamespace {
     const s = emit(component, { tripleSlashDirectives });
     ```
 
-    The value of `s` is:
+    Produces:
     ```ts
     /// <reference types="react" />
     export function Component(): JSX.Element;
