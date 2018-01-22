@@ -1,6 +1,6 @@
 {
   "name": "dts-dom",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "homepage": "https://github.com/RyanCavanaugh/dts-dom",
   "description": "DOM for TypeScript Declaration Files",
   "main": "bin/index.js",
