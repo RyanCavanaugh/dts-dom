@@ -1,25 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`an emitted variable definition in a module matches the snapshot 1`] = `
-"declare module 'myTestModule' {
+declare module 'myTestModule' {
     declare var myVar: string | boolean;
 
 }
 
-"
+
 `;
 
 exports[`an emitted variable definition in a namespace matches the snapshot 1`] = `
-"declare namespace myTestNamespace {
+declare namespace myTestNamespace {
     var myVar: string | boolean;
 
 }
 
-"
+
 `;
 
 exports[`an emitted variable definition matches the snapshot 1`] = `
-"declare var myVar: string | boolean;
+declare var myVar: string | boolean;
 
-"
+
 `;

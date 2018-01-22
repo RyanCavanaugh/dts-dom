@@ -35,6 +35,9 @@
     "mapCoverage": true,
     "collectCoverageFrom": [
       "lib/**/*.ts"
+    ],
+    "snapshotSerializers": [
+      "./lib/__tests__/string-snapshot-serializer"
     ]
   }
 }
