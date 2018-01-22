@@ -44,14 +44,26 @@ declare namespace SomeNamespace {
 # Version History
 
 ## 2.0 (not yet released)
- * **New Functionality**: Added the ability to emit triple-slash-references #40
- * **Breaking Change**: Changed the second parameter of `emit` from `ContextFlags` to `EmitOptions` #40
-```ts
-// 1.0
-const s = emit(tree, ContextFlags.Module);
-// 2.0
-const s = emit(tree, { rootFlags: ContextFlags.Module });
-```
+ * **New Functionality**: Added the ability to emit [triple-slash directives](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) #39
+    ```ts
+    const tripleSlashDirectives = [create.tripleSlashReferenceTypesDirective("react")];
+    const returnType = create.namedTypeReference('JSX.Element');
+    const component = create.function('Component', [], returnType, DeclarationFlags.Export);
+    const s = emit(component, { tripleSlashDirectives });
+    ```
+
+    The value of `s` is:
+    ```ts
+    /// <reference types="react" />
+    export function Component(): JSX.Element;
+    ```
+ * **Breaking Change**: Changed the second parameter of `emit` from `ContextFlags` to `EmitOptions` #39
+    ```ts
+    // 1.0
+    const s = emit(tree, ContextFlags.Module);
+    // 2.0
+    const s = emit(tree, { rootFlags: ContextFlags.Module });
+    ```
 
 ## 1.0
 
