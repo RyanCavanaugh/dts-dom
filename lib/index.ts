@@ -135,9 +135,10 @@ export interface VariableDeclaration extends DeclarationBase {
     type: Type;
 }
 
-export interface ExportEqualsDeclaration extends DeclarationBase {
-    kind: "export=";
-    target: string;
+export interface ExportAssignmentDeclaration extends DeclarationBase {
+    kind: "exportAssignment";
+    name: string;
+    isExportEquals?: boolean;
 }
 
 export interface ExportNameDeclaration extends DeclarationBase {
@@ -242,8 +243,8 @@ export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration | ImportDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
-export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import | ExportAssignmentDeclaration;
+export type TopLevelDeclaration = NamespaceMember | ExportAssignmentDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -421,10 +422,11 @@ export const create = {
         };
     },
 
-    exportEquals(target: string): ExportEqualsDeclaration {
+    exportAssignment(name: string, isExportEquals?: boolean): ExportAssignmentDeclaration {
         return {
-            kind: 'export=',
-            target
+            kind: 'exportAssignment',
+            name,
+            isExportEquals
         };
     },
 
@@ -1071,8 +1073,8 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         newline();
     }
 
-    function writeExportEquals(e: ExportEqualsDeclaration) {
-        start(`export = ${e.target};`);
+    function writeExportAssignment(e: ExportAssignmentDeclaration) {
+        start(`export ${e.isExportEquals ? '=' : 'default'} ${e.name};`);
         newline();
     }
 
@@ -1081,7 +1083,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         if (e.as) {
             print(` as ${e.as}`);
         }
-        print(` };`);
+        print(' };');
         newline();
     }
 
@@ -1205,8 +1207,8 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     return writeVar(d);
                 case "alias":
                     return writeAlias(d);
-                case "export=":
-                    return writeExportEquals(d);
+                case "exportAssignment":
+                    return writeExportAssignment(d);
                 case "exportName":
                     return writeExportName(d);
                 case "module":
