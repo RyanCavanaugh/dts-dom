@@ -617,7 +617,10 @@ export interface EmitOptions {
 export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.None, tripleSlashDirectives = [] }: EmitOptions = {}): string {
     let output = "";
     let indentLevel = 0;
-    let contextStack: ContextFlags[] = [rootFlags];
+
+    const isModuleWithModuleFlag = rootDecl.kind === 'module' && rootFlags === ContextFlags.Module;
+    // For a module root declaration we must omit the module flag.
+    const contextStack: ContextFlags[] = isModuleWithModuleFlag ? [] : [rootFlags];
 
     tripleSlashDirectives.forEach(writeTripleSlashDirective);
 
