@@ -56,7 +56,7 @@ declare namespace SomeNamespace {
     Produces:
     ```ts
     declare module 'my-module' {
-        declare const test: string;
+        const test: string;
         export default test;
     }
     ```

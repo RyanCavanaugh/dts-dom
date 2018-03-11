@@ -687,6 +687,8 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
             start(`export ${s}`);
         } else if (flags & DeclarationFlags.ExportDefault) {
             start(`export default ${s}`);
+        } else if (getContextFlags() & ContextFlags.Module) {
+            start(s);
         } else {
             start(`declare ${s}`);
         }

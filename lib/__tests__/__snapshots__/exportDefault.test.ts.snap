@@ -2,7 +2,7 @@
 
 exports[`an export default assignment as module member matches the snapshot 1`] = `
 declare module 'my-module' {
-    declare const test: string;
+    const test: string;
 
     export default test;
 

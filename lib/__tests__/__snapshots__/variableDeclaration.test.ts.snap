@@ -2,7 +2,7 @@
 
 exports[`an emitted variable definition in a module matches the snapshot 1`] = `
 declare module 'myTestModule' {
-    declare var myVar: string | boolean;
+    var myVar: string | boolean;
 
 }
 
