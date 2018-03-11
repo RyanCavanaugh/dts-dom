@@ -43,13 +43,13 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 3.0 (not yet released)
+## 2.1 (not yet released)
  * **New Functionality**: Added the ability to emit `export default` assignments #41
     ```ts
     const module = create.module('my-module');
     const constDeclaration = create.const('test', 'string');
-    const exportAssignment = create.exportAssignment('test');
-    module.members.push(constDeclaration, exportAssignment);
+    const exportDefault = create.exportDefault('test');
+    module.members.push(constDeclaration, exportDefault);
     const s = emit(module);
     ```
 
@@ -59,13 +59,6 @@ declare namespace SomeNamespace {
         declare const test: string;
         export default test;
     }
-    ```
- * **Breaking Change**: Renamed `exportEquals` to `exportAssignment` #41
-    ```ts
-    // 2.0
-    create.exportEquals('test');
-    // 3.0
-    create.exportAssignment('test', true);
     ```
 
 ## 2.0
