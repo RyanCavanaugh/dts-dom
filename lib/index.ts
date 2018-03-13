@@ -137,7 +137,7 @@ export interface VariableDeclaration extends DeclarationBase {
 
 export interface ExportEqualsDeclaration extends DeclarationBase {
     kind: "export=";
-    name: string;
+    target: string;
 }
 
 export interface ExportDefaultDeclaration extends DeclarationBase {
@@ -426,10 +426,10 @@ export const create = {
         };
     },
 
-    exportEquals(name: string): ExportEqualsDeclaration {
+    exportEquals(target: string): ExportEqualsDeclaration {
         return {
             kind: 'export=',
-            name
+            target
         };
     },
 
@@ -1089,7 +1089,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
     }
 
     function writeExportEquals(e: ExportEqualsDeclaration) {
-        start(`export = ${e.name};`);
+        start(`export = ${e.target};`);
         newline();
     }
 
