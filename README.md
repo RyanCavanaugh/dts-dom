@@ -43,8 +43,8 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 2.1 (not yet released)
- * **New Functionality**: Added the ability to emit `export default` assignments #41
+## 2.1
+ * **New Functionality**: Added the ability to emit `export default` assignments
     ```ts
     const module = create.module('my-module');
     const constDeclaration = create.const('test', 'string');
@@ -60,6 +60,7 @@ declare namespace SomeNamespace {
         export default test;
     }
     ```
+ * **Non-breaking Change**: Superfluous `declare` keywords are no longer emitted inside `module` declarations
 
 ## 2.0
  * **New Functionality**: Added the ability to emit [triple-slash directives](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) #39
