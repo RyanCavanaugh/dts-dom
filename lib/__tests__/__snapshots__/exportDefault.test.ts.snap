@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an export default assignment as module member matches the snapshot 1`] = `
+declare module 'my-module' {
+    const test: string;
+
+    export default test;
+
+}
+
+
+`;
+
+exports[`an export default assignment matches the snapshot 1`] = `
+export default test;
+
+
+`;

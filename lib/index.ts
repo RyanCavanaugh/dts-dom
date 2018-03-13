@@ -140,6 +140,11 @@ export interface ExportEqualsDeclaration extends DeclarationBase {
     target: string;
 }
 
+export interface ExportDefaultDeclaration extends DeclarationBase {
+    kind: "exportDefault";
+    name: string;
+}
+
 export interface ExportNameDeclaration extends DeclarationBase {
     kind: "exportName";
     name: string;
@@ -242,8 +247,8 @@ export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration | ImportDeclaration;
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
-export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import;
-export type TopLevelDeclaration =  NamespaceMember | ExportEqualsDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import | ExportEqualsDeclaration | ExportDefaultDeclaration;
+export type TopLevelDeclaration = NamespaceMember | ExportEqualsDeclaration | ExportDefaultDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
 export enum DeclarationFlags {
     None = 0,
@@ -428,6 +433,13 @@ export const create = {
         };
     },
 
+    exportDefault(name: string): ExportDefaultDeclaration {
+        return {
+            kind: 'exportDefault',
+            name
+        };
+    },
+
     exportName(name: string, as?: string): ExportNameDeclaration {
         return {
             kind: "exportName",
@@ -605,7 +617,10 @@ export interface EmitOptions {
 export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.None, tripleSlashDirectives = [] }: EmitOptions = {}): string {
     let output = "";
     let indentLevel = 0;
-    let contextStack: ContextFlags[] = [rootFlags];
+
+    const isModuleWithModuleFlag = rootDecl.kind === 'module' && rootFlags === ContextFlags.Module;
+    // For a module root declaration we must omit the module flag.
+    const contextStack: ContextFlags[] = isModuleWithModuleFlag ? [] : [rootFlags];
 
     tripleSlashDirectives.forEach(writeTripleSlashDirective);
 
@@ -675,6 +690,8 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
             start(`export ${s}`);
         } else if (flags & DeclarationFlags.ExportDefault) {
             start(`export default ${s}`);
+        } else if (getContextFlags() & ContextFlags.Module) {
+            start(s);
         } else {
             start(`declare ${s}`);
         }
@@ -1076,12 +1093,17 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         newline();
     }
 
+    function writeExportDefault(e: ExportDefaultDeclaration) {
+        start(`export default ${e.name};`);
+        newline();
+    }
+
     function writeExportName(e: ExportNameDeclaration) {
         start(`export { ${e.name}`);
         if (e.as) {
             print(` as ${e.as}`);
         }
-        print(` };`);
+        print(' };');
         newline();
     }
 
@@ -1207,6 +1229,8 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     return writeAlias(d);
                 case "export=":
                     return writeExportEquals(d);
+                case "exportDefault":
+                    return writeExportDefault(d);
                 case "exportName":
                     return writeExportName(d);
                 case "module":

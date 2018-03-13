@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`a module matches the snapshot 1`] = `
+declare module 'my-module' {
+}
+
+
+`;
+
+exports[`a module with superfluous module rootFlag matches the snapshot 1`] = `
+declare module 'my-module' {
+}
+
+
+`;
