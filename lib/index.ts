@@ -795,6 +795,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     tab();
                     print(quoteIfNeeded(member.name));
                     if (hasFlag(member.flags, DeclarationFlags.Optional)) print('?');
+                    writeTypeParameters(member.typeParameters);
                     print('(');
                     let first = true;
                     for (const param of member.parameters) {
@@ -857,11 +858,11 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                 case "object":
                     printObjectTypeMembers(e.members);
                     break;
-                    
+
                 case "string-literal":
                     print(JSON.stringify(e.value));
                     break;
-                    
+
                 case "number-literal":
                     if (isNaN(e.value)) print("typeof NaN");
                     else if (!isFinite(e.value)) print("typeof Infinity");
