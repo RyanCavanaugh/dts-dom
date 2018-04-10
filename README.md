@@ -43,7 +43,10 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 2.1
+## 3.0
+ * **Breaking change**: generic type parameters on methods were incorrectly not being emitted; see #42
+
+## 2.1.0
  * **New Functionality**: Added the ability to emit `export default` assignments
     ```ts
     const module = create.module('my-module');
@@ -62,7 +65,7 @@ declare namespace SomeNamespace {
     ```
  * **Non-breaking Change**: Superfluous `declare` keywords are no longer emitted inside `module` declarations
 
-## 2.0
+## 2.0.0
  * **New Functionality**: Added the ability to emit [triple-slash directives](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html) #39
     ```ts
     const tripleSlashDirectives = [create.tripleSlashReferenceTypesDirective("react")];
@@ -84,7 +87,7 @@ declare namespace SomeNamespace {
     const s = emit(tree, { rootFlags: ContextFlags.Module });
     ```
 
-## 1.0
+## 1.0.0
 
 The same as 0.1.25
 
