@@ -43,7 +43,7 @@ declare namespace SomeNamespace {
 
 # Version History
 
-## 3.0
+## 3.0.0
  * **Breaking change**: generic type parameters on methods were incorrectly not being emitted; see #42
 
 ## 2.1.0
