@@ -503,6 +503,13 @@ export const create = {
         };
     },
 
+    intersection(members: Type[]): IntersectionType {
+        return {
+            kind: 'intersection',
+            members
+        };
+    },
+
     typeof(type: NamedTypeReference): TypeofReference {
         return {
             kind: 'typeof',
@@ -875,6 +882,10 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
 
                 case "union":
                     writeDelimited(e.members, ' | ', writeUnionReference);
+                    break;
+
+                case "intersection":
+                    writeDelimited(e.members, ' & ', writeUnionReference)
                     break;
 
                 case "typeof":
