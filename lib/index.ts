@@ -885,7 +885,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     break;
 
                 case "intersection":
-                    writeDelimited(e.members, ' & ', writeReference)
+                    writeDelimited(e.members, ' & ', writeUnionReference)
                     break;
 
                 case "typeof":
