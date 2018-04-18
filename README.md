@@ -43,6 +43,9 @@ declare namespace SomeNamespace {
 
 # Version History
 
+## 3.1.1
+ * **New Functionality**: Added the ability to emit intersection types
+
 ## 3.0.0
  * **Breaking change**: generic type parameters on methods were incorrectly not being emitted; see #42
 
