@@ -1181,7 +1181,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         printDeclarationComments(e);
         start(e.name);
 
-        if (e.value) {
+        if (e.value !== undefined) {
             if (typeof e.value === 'string') {
                 print(` = "${e.value}"`);
             } else {
