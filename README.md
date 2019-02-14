@@ -44,6 +44,9 @@ declare namespace SomeNamespace {
 # Version History
 
 ## 3.1.1
+ * **Bugfix**: Enum members with falsy values like `0` are now correctly printed
+
+## 3.1.0
  * **New Functionality**: Added the ability to emit intersection types
 
 ## 3.0.0
@@ -97,7 +100,7 @@ The same as 0.1.25
 # Semver Policy
 
 The major version will be bumped if:
- * The *semantics* of emitted code changes, even if the prior emit was categorically wrong
+ * The *semantics* of emitted code changes, *unless* the prior emit was *clearly* a bug (e.g. members being simply skipped or printed with incorrect semantics)
  * The API surface changes in a way that could break the runtime behavior of extant working code
 
 The major version will *not* be bumped if:
