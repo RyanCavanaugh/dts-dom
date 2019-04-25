@@ -43,6 +43,9 @@ declare namespace SomeNamespace {
 
 # Version History
 
+## 3.2.0
+ * **New Functionality**: [Single-line JSDoc Comment option](https://github.com/RyanCavanaugh/dts-dom/pull/49)
+
 ## 3.1.1
  * **Bugfix**: Enum members with falsy values like `0` are now correctly printed
 
@@ -123,4 +126,5 @@ The following people have contributed features and/or bug fixes. Thank you!
  * [Hendrik Liebau](https://github.com/KingHenne)
  * [Timur Amirov](https://github.com/DeTeam)
  * [ark120202](https://www.github.com/ark120202)
+ * [wulunyi](https://www.github.com/wulunyi)
  
