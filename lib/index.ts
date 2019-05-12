@@ -34,6 +34,7 @@ export interface TypeParameter {
     kind: "type-parameter";
     name: string;
     baseType?: ObjectTypeReference|TypeParameter;
+    defaultType?: Type;
 }
 
 export interface IndexSignature extends DeclarationBase {
@@ -298,7 +299,7 @@ export const create = {
     typeParameter(name: string, baseType?: ObjectTypeReference|TypeParameter): TypeParameter {
         return {
             kind: 'type-parameter',
-            name, baseType
+            name, baseType, defaultType: undefined
         };
     },
 
@@ -920,6 +921,10 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
 
             print(p.name);
 
+            if (p.baseType && p.defaultType) {
+              start(`/* Illegal type parameter '${p.name}' can't have both baseType and defaultType`);
+            }
+
             if (p.baseType) {
                 print(' extends ');
 
@@ -927,6 +932,15 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     print(p.baseType.name);
                 else
                     writeReference(p.baseType);
+            }
+
+            if (p.defaultType) {
+              print(' = ');
+              writeReference(p.defaultType);
+            }
+
+            if (p.baseType && p.defaultType) {
+              start(`*/`);
             }
 
             first = false;
