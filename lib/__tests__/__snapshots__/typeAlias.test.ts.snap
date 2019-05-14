@@ -7,7 +7,7 @@ declare type test<T> = T;
 `;
 
 exports[`an emitted type alias with a single type parameter with a base type and a default type matches the snapshot 1`] = `
-declare type test<T/* Illegal type parameter 'T' can't have both baseType and defaultType extends interfc = any*/> = T;
+declare type test<T extends interfc = any> = T;
 
 
 `;
@@ -31,7 +31,7 @@ declare type test<T, K> = T | K;
 `;
 
 exports[`an emitted type alias with multiple type parameters with a base type and a default type matches the snapshot 1`] = `
-declare type test<T/* Illegal type parameter 'T' can't have both baseType and defaultType extends interfc = boolean*/, K/* Illegal type parameter 'K' can't have both baseType and defaultType extends interfc = boolean*/> = T | K;
+declare type test<T extends interfc = boolean, K extends interfc = boolean> = T | K;
 
 
 `;

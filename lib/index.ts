@@ -921,10 +921,6 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
 
             print(p.name);
 
-            if (p.baseType && p.defaultType) {
-              start(`/* Illegal type parameter '${p.name}' can't have both baseType and defaultType`);
-            }
-
             if (p.baseType) {
                 print(' extends ');
 
@@ -937,10 +933,6 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
             if (p.defaultType) {
               print(' = ');
               writeReference(p.defaultType);
-            }
-
-            if (p.baseType && p.defaultType) {
-              start(`*/`);
             }
 
             first = false;
