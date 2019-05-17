@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted type alias with a single type parameter matches the snapshot 1`] = `
+declare type test<T> = T;
+
+
+`;
+
+exports[`an emitted type alias with a single type parameter with a base type and a default type matches the snapshot 1`] = `
+declare type test<T extends interfc = any> = T;
+
+
+`;
+
+exports[`an emitted type alias with a single type parameter with a base type matches the snapshot 1`] = `
+declare type test<T extends interfc> = T;
+
+
+`;
+
+exports[`an emitted type alias with a single type parameter with a default type matches the snapshot 1`] = `
+declare type test<T = number> = T;
+
+
+`;
+
+exports[`an emitted type alias with multiple type parameters matches the snapshot 1`] = `
+declare type test<T, K> = T | K;
+
+
+`;
+
+exports[`an emitted type alias with multiple type parameters with a base type and a default type matches the snapshot 1`] = `
+declare type test<T extends interfc = boolean, K extends interfc = boolean> = T | K;
+
+
+`;
+
+exports[`an emitted type alias with multiple type parameters with a base type matches the snapshot 1`] = `
+declare type test<T extends interfc, K extends interfc> = T | K;
+
+
+`;
+
+exports[`an emitted type alias with multiple type parameters with a default type matches the snapshot 1`] = `
+declare type test<T = object, K = object> = T | K;
+
+
+`;
