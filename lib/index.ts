@@ -177,6 +177,7 @@ export interface FunctionType {
     kind: "function-type";
     parameters: Parameter[];
     returnType: Type;
+    typeParameters: TypeParameter[];
 }
 
 export interface TypeAliasDeclaration extends DeclarationBase {
@@ -354,6 +355,7 @@ export const create = {
     functionType(parameters: Parameter[], returnType: Type): FunctionType {
         return {
             kind: "function-type",
+            typeParameters: [],
             parameters, returnType
         };
     },
@@ -958,6 +960,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
     }
 
     function writeFunctionType(f: FunctionType) {
+        writeTypeParameters(f.typeParameters);
         print('(');
         writeDelimited(f.parameters, ', ', writeParameter);
         print(')');
