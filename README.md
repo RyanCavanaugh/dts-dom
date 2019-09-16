@@ -43,6 +43,9 @@ declare namespace SomeNamespace {
 
 # Version History
 
+## 3.4.0
+ * **New Functionality**: [Generic function declarations](https://github.com/RyanCavanaugh/dts-dom/pull/52)
+
 ## 3.3.0
  * **New Functionality**: [Generic defaults](https://github.com/RyanCavanaugh/dts-dom/pull/49)
 
@@ -116,6 +119,7 @@ The major version will *not* be bumped if:
 # Contributors
 
 The following people have contributed features and/or bug fixes. Thank you!
+ * [Karin Agan](https://github.com/agankarin)
  * [Sean Barag](https://www.github.com/sjbarag)
  * [wehrstedt](https://www.github.com/wehrstedt)
  * [New Future](https://www.github.com/NewFuture)
