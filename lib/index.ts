@@ -195,6 +195,7 @@ export interface ArrayTypeReference {
 export interface NamedTypeReference {
     kind: "name";
     name: string;
+    typeArguments: Type[];
 }
 
 export interface TypeofReference {
@@ -861,9 +862,13 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                 case "type-parameter":
                 case "class":
                 case "interface":
-                case "name":
                 case "alias":
                     print(e.name);
+                    break;
+
+                case "name":
+                    print(e.name);
+                    writeTypeArguments(e.typeArguments);
                     break;
 
                 case "array":
@@ -936,6 +941,24 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
               print(' = ');
               writeReference(p.defaultType);
             }
+
+            first = false;
+        }
+
+        print('>');
+    }
+    
+    function writeTypeArguments(args: Type[]) {
+        if (args.length === 0) return;
+
+        print('<');
+
+        let first = true;
+
+        for (const p of args) {
+            if (!first) print(', ');
+
+            writeReference(p);
 
             first = false;
         }

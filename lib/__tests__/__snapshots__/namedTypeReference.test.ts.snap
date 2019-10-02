@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted named reference without type arguments 1`] = `
+type Alias = MyInterface;
+
+
+`;
+
+exports[`an emitted named reference with single type argument 1`] = `
+type Alias = Promise<string>;
+
+
+`;
+
+exports[`an emitted named reference with multiple type arguments 1`] = `
+type Alias = Generator<string, number>;
+
+
+`;
