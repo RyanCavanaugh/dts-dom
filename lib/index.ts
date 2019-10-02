@@ -426,7 +426,8 @@ export const create = {
     namedTypeReference(name: string): NamedTypeReference {
         return {
             kind: 'name',
-            name
+            name,
+            typeArguments: []
         };
     },
 
