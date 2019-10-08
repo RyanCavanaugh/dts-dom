@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted named reference with multiple type arguments matches the snapshot 1`] = `
+declare type Alias = Generator<string, number>;
+
+
+`;
+
+exports[`an emitted named reference with single type argument matches the snapshot 1`] = `
+declare type Alias = Promise<string>;
+
+
+`;
+
+exports[`an emitted named reference without type arguments matches the snapshot 1`] = `
+declare type Alias = MyInterface;
+
+
+`;
