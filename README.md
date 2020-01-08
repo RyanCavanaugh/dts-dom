@@ -43,6 +43,9 @@ declare namespace SomeNamespace {
 
 # Version History
 
+## 3.6.0
+ * **New Functionality**: [Namespaces may now contain enums](https://github.com/RyanCavanaugh/dts-dom/pull/62)
+
 ## 3.5.0
  * **New Functionality**: [Type arguments for type references](https://github.com/RyanCavanaugh/dts-dom/pull/54)
 
@@ -122,6 +125,7 @@ The major version will *not* be bumped if:
 # Contributors
 
 The following people have contributed features and/or bug fixes. Thank you!
+ * [juno suárez](https://github.com/junoatscroll)
  * [Andrew Bradley](https://github.com/cspotcode)
  * [Karin Agan](https://github.com/agankarin)
  * [Sean Barag](https://github.com/sjbarag)
