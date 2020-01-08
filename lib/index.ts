@@ -249,7 +249,7 @@ export type Type = TypeReference | UnionType | IntersectionType | PrimitiveType 
 
 export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNamedDeclaration | ImportEqualsDeclaration | ImportDeclaration;
 
-export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration;
+export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | EnumDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import | ExportEqualsDeclaration | ExportDefaultDeclaration;
 export type TopLevelDeclaration = NamespaceMember | ExportEqualsDeclaration | ExportDefaultDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
 
@@ -948,7 +948,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
 
         print('>');
     }
-    
+
     function writeTypeArguments(args: Type[]) {
         if (args.length === 0) return;
 

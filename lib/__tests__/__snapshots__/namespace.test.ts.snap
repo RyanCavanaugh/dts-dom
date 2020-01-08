@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted namespace with several members matches the snapshot 1`] = `
+declare namespace Namespace {
+    interface interfaceMember {
+    }
+
+    type aliasMember = string;
+
+    class ClassMember {
+    }
+
+    namespace namespaceMember {
+    }
+
+    const constMember: number;
+
+    var varMember: boolean;
+
+    function functionMember(): void;
+
+    enum enumMember {
+    }
+
+}
+
+
+`;
+
+exports[`an emitted namespace without members matches the snapshot 1`] = `
+declare namespace Namespace {
+}
+
+
+`;
