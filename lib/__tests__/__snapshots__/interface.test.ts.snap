@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an emitted interface empty matches the snapshot 1`] = `
+declare interface Interface {
+}
+
+
+`;
+
+exports[`an emitted interface with type parameters matches the snapshot 1`] = `
+declare interface Interface<T1, T2 extends object, T3 extends BaseFoo> {
+}
+
+
+`;

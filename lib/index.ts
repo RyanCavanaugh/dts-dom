@@ -33,7 +33,7 @@ export interface Parameter {
 export interface TypeParameter {
     kind: "type-parameter";
     name: string;
-    baseType?: ObjectTypeReference|TypeParameter;
+    baseType?: ObjectTypeReference | TypeReference | UnionType | IntersectionType | PrimitiveType | ObjectType | TypeofReference | FunctionType | TypeParameter;
     defaultType?: Type;
 }
 
@@ -85,6 +85,7 @@ export interface InterfaceDeclaration extends DeclarationBase {
     kind: "interface";
     name: string;
     members: ObjectTypeMember[];
+    typeParameters: TypeParameter[];
     baseTypes?: ObjectTypeReference[];
 }
 
@@ -235,6 +236,31 @@ export interface TripleSlashAmdModuleDirective {
 
 export type PrimitiveType = "string" | "number" | "boolean" | "any" | "void" | "object" | "null" | "undefined" | "true" | "false" | StringLiteral | NumberLiteral;
 
+export function isPrimitiveType(x: Type): x is PrimitiveType {
+  switch (x) {
+      case "string":
+      case "number":
+      case "boolean":
+      case "any":
+      case "void":
+      case "object":
+      case "null":
+      case "undefined":
+      case "true":
+      case "false":
+          return true;
+  }
+  // StringLiteral
+  if (typeof x === 'string') {
+      return true;
+  }
+  // NumberLiteral
+  if (typeof x === 'number') {
+      return true;
+  }
+  return false;
+}
+
 export type ThisType = "this";
 
 export type TripleSlashDirective = TripleSlashReferencePathDirective | TripleSlashReferenceTypesDirective | TripleSlashReferenceNoDefaultLibDirective | TripleSlashAmdModuleDirective;
@@ -281,6 +307,7 @@ export const create = {
         return {
             name,
             baseTypes: [],
+            typeParameters: [],
             kind: "interface",
             members: [],
             flags
@@ -298,7 +325,7 @@ export const create = {
         };
     },
 
-    typeParameter(name: string, baseType?: ObjectTypeReference|TypeParameter): TypeParameter {
+    typeParameter(name: string, baseType?: TypeParameter['baseType']): TypeParameter {
         return {
             kind: 'type-parameter',
             name, baseType, defaultType: undefined
@@ -932,7 +959,9 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
             if (p.baseType) {
                 print(' extends ');
 
-                if (p.baseType.kind === 'type-parameter')
+                if (isPrimitiveType(p.baseType)) 
+                    print(String(p.baseType));
+                else if (p.baseType.kind === 'type-parameter')
                     print(p.baseType.name);
                 else
                     writeReference(p.baseType);
@@ -969,7 +998,9 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
 
     function writeInterface(d: InterfaceDeclaration) {
         printDeclarationComments(d);
-        startWithDeclareOrExport(`interface ${d.name} `, d.flags);
+        startWithDeclareOrExport(`interface `, d.flags);
+        print(d.name);
+        writeTypeParameters(d.typeParameters);
         if (d.baseTypes && d.baseTypes.length) {
             print(`extends `);
             let first = true;
@@ -979,6 +1010,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                 first = false;
             }
         }
+        print(" ");
         printObjectTypeMembers(d.members);
         newline();
     }
