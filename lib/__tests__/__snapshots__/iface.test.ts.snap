@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`an interface type with call signature matches the snapshot 1`] = `
+declare interface iface {
+    (first?: string, ...second: any[]): string;
+}
+
+
+`;

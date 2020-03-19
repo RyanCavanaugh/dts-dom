@@ -796,14 +796,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     tab();
                     writeTypeParameters(member.typeParameters);
                     print("(");
-                    let first = true;
-                    for (const param of member.parameters) {
-                        if (!first) print(", ");
-                        first = false;
-                        print(param.name);
-                        print(": ");
-                        writeReference(param.type);
-                    }
+                    writeDelimited(member.parameters, ', ', writeParameter);
                     print("): ");
                     writeReference(member.returnType);
                     print(";");
