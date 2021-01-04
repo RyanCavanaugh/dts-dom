@@ -841,7 +841,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     for (const param of member.parameters) {
                         if (!first) print(', ');
                         first = false;
-			writeParameter(param);
+			            writeParameter(param);
                     }
                     print('): ');
                     writeReference(member.returnType);
@@ -859,8 +859,9 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     print(';');
                     newline();
                     return;
+                default:
+                    never(member, `Unknown member kind ${(member as ObjectTypeMember).kind}`);
             }
-            never(member, `Unknown member kind ${(member as ObjectTypeMember).kind}`);
         }
     }
 
