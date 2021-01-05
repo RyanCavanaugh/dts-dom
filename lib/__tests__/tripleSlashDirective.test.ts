@@ -1,4 +1,4 @@
-import {ContextFlags, TripleSlashDirective, create, emit} from "../index"
+import {TripleSlashDirective, create, emit} from "../index"
 
 describe("an emitted module with triple slash directives", () => {
     it("matches the snapshot", () => {
