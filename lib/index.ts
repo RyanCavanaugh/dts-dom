@@ -258,11 +258,11 @@ export function isPrimitiveType(x: Type): x is PrimitiveType {
           return true;
   }
   // StringLiteral
-  if (typeof x === 'string') {
+  if (typeof x === 'string' || x instanceof String) {
       return true;
   }
   // NumberLiteral
-  if (typeof x === 'number') {
+  if (typeof x === 'number' || x instanceof Number) {
       return true;
   }
   return false;
