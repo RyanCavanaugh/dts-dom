@@ -4,6 +4,13 @@ export interface DeclarationBase {
     flags?: DeclarationFlags;
 }
 
+export interface FileDeclaration extends DeclarationBase {
+    kind: "file"
+    name?: string
+    imports: Import[]
+    members: FileMemberDeclaration[]
+}
+
 export interface EnumMemberDeclaration extends DeclarationBase {
     kind: "enum-value";
     name: string;
@@ -251,11 +258,11 @@ export function isPrimitiveType(x: Type): x is PrimitiveType {
           return true;
   }
   // StringLiteral
-  if (typeof x === 'string') {
+  if (typeof x === 'string' || x instanceof String) {
       return true;
   }
   // NumberLiteral
-  if (typeof x === 'number') {
+  if (typeof x === 'number' || x instanceof Number) {
       return true;
   }
   return false;
@@ -277,7 +284,8 @@ export type Import = ImportAllDeclaration | ImportDefaultDeclaration | ImportNam
 
 export type NamespaceMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | EnumDeclaration;
 export type ModuleMember = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration | NamespaceDeclaration | ConstDeclaration | VariableDeclaration | FunctionDeclaration | Import | ExportEqualsDeclaration | ExportDefaultDeclaration;
-export type TopLevelDeclaration = NamespaceMember | ExportEqualsDeclaration | ExportDefaultDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type TopLevelDeclaration = FileDeclaration | NamespaceMember | ExportEqualsDeclaration | ExportDefaultDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration | Import;
+export type FileMemberDeclaration = NamespaceMember | ExportEqualsDeclaration | ExportDefaultDeclaration | ExportNameDeclaration | ModuleDeclaration | EnumDeclaration
 
 export enum DeclarationFlags {
     None = 0,
@@ -303,6 +311,15 @@ export const config = {
 };
 
 export const create = {
+    file (name?: string): FileDeclaration {
+        return {
+            kind: 'file',
+            name,
+            imports: [],
+            members: []
+        }
+    },
+
     interface(name: string, flags = DeclarationFlags.None): InterfaceDeclaration {
         return {
             name,
@@ -841,7 +858,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     for (const param of member.parameters) {
                         if (!first) print(', ');
                         first = false;
-			writeParameter(param);
+			            writeParameter(param);
                     }
                     print('): ');
                     writeReference(member.returnType);
@@ -859,8 +876,9 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
                     print(';');
                     newline();
                     return;
+                default:
+                    never(member, `Unknown member kind ${(member as ObjectTypeMember).kind}`);
             }
-            never(member, `Unknown member kind ${(member as ObjectTypeMember).kind}`);
         }
     }
 
@@ -1286,11 +1304,27 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         newline();
     }
 
+    function writeFile(f: FileDeclaration) {
+        if (typeof f.name === 'string') {
+            print('// Filename: ' + f.name)
+            newline()
+        }
+        for (const i of f.imports) {
+            writeDeclaration(i)
+        }
+        for (const m of f.members) {
+            newline()
+            writeDeclaration(m)
+        }
+    }
+
     function writeDeclaration(d: TopLevelDeclaration) {
         if (typeof d === 'string') {
             return print(d);
         } else {
             switch (d.kind) {
+                case "file":
+                    return writeFile(d)
                 case "interface":
                     return writeInterface(d);
                 case "function":

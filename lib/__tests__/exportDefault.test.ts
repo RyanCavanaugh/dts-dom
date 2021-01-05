@@ -1,4 +1,4 @@
-import {ContextFlags, create, emit} from "../index"
+import {create, emit} from "../index"
 
 describe("an export default assignment", () => {
     it("matches the snapshot", () => {
