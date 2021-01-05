@@ -311,7 +311,7 @@ export const config = {
 };
 
 export const create = {
-    file (name: string, path?: string): FileDeclaration {
+    file (name?: string): FileDeclaration {
         return {
             kind: 'file',
             name,
