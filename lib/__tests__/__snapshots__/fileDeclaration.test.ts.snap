@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`a file declaration matches the snapshot 1`] = `
+// Filename: MyFile.d.ts
+
+
+`;
+
+exports[`a file declaration with imports and members 1`] = `
+import {MyNamedImport} from 'MyNamedImport';
+
+export const MY_CONST: MyNamedImport;
+
+export const YOUR_CONST: "Literally";
+
+
+`;
