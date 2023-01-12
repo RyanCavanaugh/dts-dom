@@ -997,7 +997,7 @@ export function emit(rootDecl: TopLevelDeclaration, { rootFlags = ContextFlags.N
         print(d.name);
         writeTypeParameters(d.typeParameters);
         if (d.baseTypes && d.baseTypes.length) {
-            print(`extends `);
+            print(` extends `);
             let first = true;
             for (const baseType of d.baseTypes) {
                 if (!first) print(', ');
