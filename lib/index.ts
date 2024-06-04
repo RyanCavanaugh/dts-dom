@@ -239,7 +239,7 @@ export interface TripleSlashAmdModuleDirective {
     name?: string;
 }
 
-export type PrimitiveType = "string" | "number" | "bigint" | "boolean" | "any" | "unknown" | "void" | "object" | "null" | "undefined" | "true" | "false" | StringLiteral | NumberLiteral;
+export type PrimitiveType = "string" | "number" |  "bigint" | "boolean" | "any" | "unknown" | "void" | "object" | "symbol" | "null" | "undefined" | "true" | "false" | StringLiteral | NumberLiteral;
 
 export function isPrimitiveType(x: Type): x is PrimitiveType {
   switch (x) {
@@ -251,6 +251,7 @@ export function isPrimitiveType(x: Type): x is PrimitiveType {
       case "unknown":
       case "void":
       case "object":
+      case "symbol":
       case "null":
       case "undefined":
       case "true":
@@ -618,6 +619,7 @@ export const type = {
     unknown: <PrimitiveType>"unknown",
     void: <PrimitiveType>"void",
     object: <PrimitiveType>"object",
+    symbol: <PrimitiveType>"symbol",
     null: <PrimitiveType>"null",
     undefined: <PrimitiveType>"undefined",
     true: <PrimitiveType>"true",
